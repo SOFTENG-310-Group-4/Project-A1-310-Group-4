@@ -27,6 +27,11 @@ import nz.ac.auckland.grocerfy.repository.ProductRepository;
 import nz.ac.auckland.grocerfy.repository.StoreRepository;
 import nz.ac.auckland.grocerfy.repository.StorePriceRepository;
 
+/**
+ * Service responsible for comparing a user basket across all stores.
+ * It determines whether each store can fulfil the full basket, lists missing items,
+ * and identifies the cheapest available store.
+ */
 @Service
 public class BasketComparisonService {
 
@@ -41,6 +46,12 @@ public class BasketComparisonService {
 		this.storePriceRepository = storePriceRepository;
 	}
 
+	/**
+	 * Compare a basket payload against all stores in the catalogue.
+	 *
+	 * @param request basket request with product IDs and quantities
+	 * @return response containing store comparison results and the cheapest available store
+	 */
 	@Transactional(readOnly = true)
 	public BasketComparisonResponse compareBasket(BasketComparisonRequest request) {
 		List<BasketItemRequest> basketItems = request == null || request.items() == null ? List.of() : request.items();
@@ -48,6 +59,7 @@ public class BasketComparisonService {
 			throw new IllegalArgumentException("Basket must contain at least one item.");
 		}
 
+		// Normalize basket items by product ID and sum duplicate quantities.
 		Map<Long, BasketItemRequest> normalizedItems = new LinkedHashMap<>();
 		for (BasketItemRequest item : basketItems) {
 			if (item == null || item.productId() == null) {
@@ -56,7 +68,9 @@ public class BasketComparisonService {
 			if (item.quantity() <= 0) {
 				throw new IllegalArgumentException("Basket item quantities must be greater than zero.");
 			}
-			normalizedItems.put(item.productId(), new BasketItemRequest(item.productId(), item.quantity()));
+
+			normalizedItems.merge(item.productId(), new BasketItemRequest(item.productId(), item.quantity()),
+				(existing, next) -> new BasketItemRequest(existing.productId(), existing.quantity() + next.quantity()));
 		}
 
 		List<Product> requestedProducts = productRepository.findAllById(normalizedItems.keySet());
