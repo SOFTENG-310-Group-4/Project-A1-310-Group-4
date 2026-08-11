@@ -14,7 +14,7 @@ jobs:
       contents: read
     steps:
       - name: 'Sonar analysis'
-        uses: SOFTENG-310-Group-4/Project-A1-310-Group-4/.github/actions@main
+        uses: $/.github/actions
         with:
           distribution: "zulu"
           java-version: '17'
