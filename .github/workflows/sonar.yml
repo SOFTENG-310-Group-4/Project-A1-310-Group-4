@@ -10,14 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
-      actions: read # Required to download artifacts
-      contents: read 
+      actions: read
+      contents: read
     steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v4
-
       - name: 'Sonar analysis'
-        uses: ./.github/actions/
+        uses: SOFTENG-310-Group-4/Project-A1-310-Group-4/.github/actions@main
         with:
           distribution: "zulu"
           java-version: '17'
