@@ -39,3 +39,15 @@ jobs:
 
       - name: 'Prepare Sonar analysis'
         uses: evaristegalois11/sonar-fork-analysis@v1
+
+
+      - name: 'Archive source for Sonar'
+        run: git archive --format=tar -o source.tar HEAD
+
+      - name: 'Upload source artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-source
+          path: source.tar
+          if-no-files-found: error
+          retention-days: 1
