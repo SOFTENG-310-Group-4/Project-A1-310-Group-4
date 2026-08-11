@@ -10,4 +10,10 @@
     <modules>
         <module>server</module>
     </modules>
-</project>  
+
+    <properties>
+        <sonar.sources>server/src/main/java,client/src</sonar.sources>
+        <sonar.tests>server/src/test/java,client/src</sonar.tests>
+        <sonar.exclusions>/node_modules/,/target/,/dist/,/build/</sonar.exclusions>
+    </properties>
+</project>
