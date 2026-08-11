@@ -2,13 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>softeng310-group4</groupId>
-  <artifactId>project-a1-root</artifactId>
-  <version>1.0</version>
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>server</module>
-  </modules>
-</project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>nz.ac.auckland</groupId>
+    <artifactId>project-a1-root</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>server</module>
+    </modules>
+</project>  
