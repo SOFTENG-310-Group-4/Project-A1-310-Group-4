@@ -38,7 +38,7 @@ jobs:
         run: ./mvnw -B install   # must be install, not verify — the action needs the .m2 artifacts + target dir
 
       - name: 'Prepare Sonar analysis'
-        uses: ./.github/actions/action.yml
+        uses: ./.github/actions
 
       - name: 'Archive source for Sonar'
         run: git archive --format=tar -o source.tar HEAD
