@@ -14,11 +14,9 @@ jobs:
   sonar:
     name: 'Sonar analysis'
     runs-on: ubuntu-latest
-
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    permissions:
-      actions: read # Required to download artifacts
-
+    # Sonarcloud only runs on the main repo, not forks
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == 'SOFTENG-310-Group-4/Project-A1-310-Group-4' }}
+    
     steps:
       - name: 'Sonar analysis'
         uses: actions/checkout@v3
