@@ -33,7 +33,7 @@ jobs:
 
       - name: 'Build'
         working-directory: ./server
-        run: mvn -B verify sonar:sonar -Dsonar.projectKey=SOFTENG-310-Group-4_Project-A1-310-Group-4
-        
+        run: ./mvnw -B install   # must be install, not verify — the action needs the .m2 artifacts + target dir
+
       - name: 'Prepare Sonar analysis'
         uses: evaristegalois11/sonar-fork-analysis@v1
