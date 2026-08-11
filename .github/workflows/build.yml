@@ -32,7 +32,8 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: 'Build'
-        run: ./mvnw -B install # Be sure to invoke the install goal!
-
+        working-directory: ./server
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=SOFTENG-310-Group-4_Project-A1-310-Group-4
+        
       - name: 'Prepare Sonar analysis'
         uses: evaristegalois11/sonar-fork-analysis@v1
