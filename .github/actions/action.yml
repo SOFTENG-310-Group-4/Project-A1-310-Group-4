@@ -28,10 +28,14 @@ runs:
     - name: 'Prepare pull request artifact'
       if: github.event_name != 'workflow_run'
       shell: bash
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
       run: |
-        echo ${{ github.event.pull_request.number }} >> pr-event.txt
-        echo ${{ github.event.pull_request.head.ref }} >> pr-event.txt
-        echo ${{ github.event.pull_request.base.ref }} >> pr-event.txt
+        echo "$PR_NUMBER" >> pr-event.txt
+        echo "$PR_HEAD_REF" >> pr-event.txt
+        echo "$PR_BASE_REF" >> pr-event.txt
 
     - name: 'Prepare output artifact'
       if: github.event_name != 'workflow_run'
