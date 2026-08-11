@@ -12,53 +12,11 @@ jobs:
     permissions:
       actions: read # Required to download artifacts
     steps:
-      - name: 'Set up JDK 17'
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: "zulu"
-
-      - name: 'Cache SonarQube packages'
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: 'Download source artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: sonar-source
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 'Download build artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: sonar-artifact
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 'Extract artifacts'
-        run: |
-          tar -xf source.tar
-          tar -xf output.tar
-          mkdir -p ~/.m2/repository
-          tar -xf repository.tar -C ~/.m2/repository
-
-      - name: 'Read pull request event'
-        run: |
-          echo "pr_number=$(sed '1q;d' pr-event.txt)" >> "$GITHUB_ENV"
-          echo "pr_head_ref=$(sed '2q;d' pr-event.txt)" >> "$GITHUB_ENV"
-          echo "pr_base_ref=$(sed '3q;d' pr-event.txt)" >> "$GITHUB_ENV"
-
       - name: 'Sonar analysis'
-        working-directory: ./server
-        run: >
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=SOFTENG-310-Group-4_Project-A1-310-Group-4
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.scm.revision=', github.event.workflow_run.head_sha) || '' }}
-          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.key=', env.pr_number) || '' }}
-          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.branch=', env.pr_head_ref) || '' }}
-          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.base=', env.pr_base_ref) || '' }}
+        uses: ./.github/actions/sonar-fork-analysis
+        with:
+          distribution: "zulu"
+          java-version: '17'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          project-key: SOFTENG-310-Group-4_Project-A1-310-Group-4
