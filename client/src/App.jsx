@@ -1,8 +1,11 @@
+import ProductList from './components/ProductList';
+
 function App() {
   return (
-      <div className="app">
-        <h1>Grocerfy</h1>
-      </div>
+    <>
+      <h1>GROCERFY</h1>
+      <ProductList />
+    </>
   );
 }
 
