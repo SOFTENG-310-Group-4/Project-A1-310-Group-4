@@ -144,7 +144,6 @@ runs:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
       with:
         args: >
-          ${{ env.build_command }} -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dsonar.projectKey=${{ inputs.project-key }}
           -Dsonar.organization=softeng-310-group-4
           -Dsonar.token=${{ inputs.sonar-token }}
