@@ -36,3 +36,11 @@ jobs:
       - name: 'Build'
         working-directory: ./server
         run: ./mvnw -B install   # must be install, not verify — the action needs the .m2 artifacts + target dir
+      - name: 'Prepare Sonar artifact'
+        uses: $/.github/actions
+        with:
+          distribution: "zulu"
+          java-version: '17'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          project-key: SOFTENG-310-Group-4_Project-A1-310-Group-4

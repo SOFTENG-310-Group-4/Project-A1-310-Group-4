@@ -137,16 +137,22 @@ runs:
         echo "pr_head_ref=$(sed '2q;d' pr-event.txt)" >> "$GITHUB_ENV"
         echo "pr_base_ref=$(sed '3q;d' pr-event.txt)" >> "$GITHUB_ENV"
 
-    - name: 'Sonar analysis - Maven'
+    - name: 'Sonar analysis'
       if: github.event_name == 'workflow_run' && env.build_type == 'maven'
-      shell: bash
-      run: >
-        ${{ env.build_command }} -B -N org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-        -Dsonar.projectKey=${{ inputs.project-key }}
-        -Dsonar.token=${{ inputs.sonar-token }}
-        -Dsonar.sources=server/src/main/java,client/src
-        -Dsonar.exclusions=client/node_modules/**,client/dist/**,server/target/**
-        -Dsonar.java.binaries=server/target/classes
+      uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+      with:
+        args: >
+          -Dsonar.projectKey=${{ inputs.project-key }}
+          -Dsonar.projectBaseDir=.
+          -Dsonar.sources=server/src/main/java,client/src
+          -Dsonar.exclusions=client/node_modules/**,client/dist/**,server/target/**
+          -Dsonar.java.binaries=server/target/classes
+          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.scm.revision=', github.event.workflow_run.head_sha) || '' }}
+          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.key=', env.pr_number) || '' }}
+          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.branch=', env.pr_head_ref) || '' }}
+          ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.base=', env.pr_base_ref) || '' }}
 
     - name: 'Sonar analysis - Gradle'
       if: github.event_name == 'workflow_run' && env.build_type == 'gradle'
