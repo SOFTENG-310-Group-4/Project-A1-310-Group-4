@@ -144,6 +144,9 @@ runs:
         ${{ env.build_command }} -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         -Dsonar.projectKey=${{ inputs.project-key }}
         -Dsonar.token=${{ inputs.sonar-token }}
+        -Dsonar.sources=server/src/main/java,client/src
+        -Dsonar.exclusions=client/node_modules/**,client/dist/**,server/target/**
+        -Dsonar.java.binaries=server/target/classes
         ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.scm.revision=', github.event.workflow_run.head_sha) || '' }}
         ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.key=', env.pr_number) || '' }}
         ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.branch=', env.pr_head_ref) || '' }}
