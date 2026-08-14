@@ -14,7 +14,7 @@ inputs:
     description: 'The Sonar token used to authenticate with the Sonar API.'
   project-key:
     description: 'The project''s unique key assigned by Sonar.'
-  project-organization:
+  sonar-organization:
     description: 'The organization key assigned by Sonar.'
 branding:
   icon: search

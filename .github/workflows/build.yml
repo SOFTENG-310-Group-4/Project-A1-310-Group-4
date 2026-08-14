@@ -44,4 +44,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN }}
           project-key: SOFTENG-310-Group-4_Project-A1-310-Group-4
-          project-organization: softeng-310-group-4
+          sonar-organization: softeng-310-group-4
