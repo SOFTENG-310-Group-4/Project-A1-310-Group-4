@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import DietaryFilterBar from './components/DietaryFilterBar'
 import { compareBasket } from './api/basketApi'
 import { syncBasketWithFilteredProducts } from './utils/basketSync'
@@ -8,6 +8,7 @@ import { useCartLines } from './hooks/useCartLines'
 import Hero from './components/Hero'
 import CatalogueList from './components/CatalogueList'
 import BasketForm from './components/BasketForm'
+import ResultsPanel from './components/ResultsPanel'
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
@@ -114,76 +115,8 @@ function App() {
           onSubmit={handleSubmit}
         />
       </section>
-
-      {comparison ? (
-        <section className="panel results-panel">
-          <div className="section-heading">
-            <h2>Results</h2>
-            <span>{comparison.stores.length} stores compared</span>
-          </div>
-
-          <div className="cheapest-card">
-            <p>Cheapest available option</p>
-            {comparison.cheapestAvailableStore ? (
-              <div>
-                <strong>{comparison.cheapestAvailableStore.storeName}</strong>
-                <span>{comparison.cheapestAvailableStore.region}</span>
-                <span className="price">${comparison.cheapestAvailableStore.availableSubtotal.toFixed(2)}</span>
-              </div>
-            ) : (
-              <div>
-                <strong>No store can fulfil the full basket</strong>
-                <span>The response below still shows which items are missing.</span>
-              </div>
-            )}
-          </div>
-
-          <div className="store-grid">
-            {comparison.stores.map((store) => (
-              <article className={`store-card ${store.available ? 'available' : 'unavailable'}`} key={store.storeId}>
-                <div className="store-header">
-                  <div>
-                    <h3>{store.storeName}</h3>
-                    <p>{store.region}</p>
-                  </div>
-                  <span>{store.available ? 'Basket available' : 'Missing items'}</span>
-                </div>
-
-                <p className="store-address">{store.address}</p>
-
-                <div className="store-total">
-                  <span>Basket total</span>
-                  <strong>${store.availableSubtotal.toFixed(2)}</strong>
-                </div>
-
-                {store.missingItems.length > 0 ? (
-                  <div className="list-block">
-                    <h4>Missing items</h4>
-                    <ul>
-                      {store.missingItems.map((missingItem) => (
-                        <li key={`${store.storeId}-${missingItem.productId}`}>
-                          {missingItem.productName} x {missingItem.quantity}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                <div className="list-block">
-                  <h4>Available basket lines</h4>
-                  <ul>
-                    {store.lineItems.map((lineItem) => (
-                      <li key={`${store.storeId}-${lineItem.productId}`}>
-                        {lineItem.productName} x {lineItem.quantity} - ${lineItem.lineTotal.toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      
+      {comparison ? <ResultsPanel comparison={comparison} /> : null}
     </main>
   )
 }

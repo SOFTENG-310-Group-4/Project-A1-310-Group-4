@@ -9,6 +9,7 @@ import { DIETARY_TAGS } from '../constants/dietaryTags'
 
 function DietaryFilterBar({ selectedTags, onToggleTag, onClear, matchCount }) {
   const hasSelection = selectedTags.length > 0
+  const matchText = `${matchCount} ${matchCount === 1 ? 'product matches' : 'products match'}`
 
   return (
     <section className="filter-card">
@@ -38,7 +39,7 @@ function DietaryFilterBar({ selectedTags, onToggleTag, onClear, matchCount }) {
 
       <p className="filter-summary">
         {hasSelection
-          ? `${matchCount} ${matchCount === 1 ? 'product matches' : 'products match'} every selected tag`
+          ? `${matchText} every selected tag`
           : 'Showing the full catalogue'}
       </p>
     </section>
