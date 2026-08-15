@@ -3,15 +3,15 @@ import DietaryFilterBar from './components/DietaryFilterBar'
 import { compareBasket } from './api/basketApi'
 import { syncBasketWithFilteredProducts } from './utils/basketSync'
 import { useProductCatalogue } from './hooks/useProductCatalogue'
-
-const emptyCartLine = { productId: '', quantity: 1 }
+import { useCartLines } from './hooks/useCartLines'
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
-  const [cartLines, setCartLines] = useState([{ ...emptyCartLine }])
   const [comparison, setComparison] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const { cartLines, setCartLines, updateLine, addLine, removeLine } = useCartLines()
 
   // The catalogue is pre-filled with the first product on the very first load
   // only. Without this guard the basket would be reset every time a filter
@@ -58,26 +58,7 @@ function App() {
     setDietaryTags([])
   }
 
-  function updateLine(index, field, value) {
-    setCartLines((currentLines) =>
-      currentLines.map((line, lineIndex) =>
-        lineIndex === index
-          ? {
-              ...line,
-              [field]: value,
-            }
-          : line,
-      ),
-    )
-  }
 
-  function addLine() {
-    setCartLines((currentLines) => [...currentLines, { ...emptyCartLine }])
-  }
-
-  function removeLine(index) {
-    setCartLines((currentLines) => currentLines.length === 1 ? currentLines : currentLines.filter((_, lineIndex) => lineIndex !== index))
-  }
 
   async function handleSubmit(event) {
     event.preventDefault()
