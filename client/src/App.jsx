@@ -5,6 +5,8 @@ import { syncBasketWithFilteredProducts } from './utils/basketSync'
 import { useProductCatalogue } from './hooks/useProductCatalogue'
 import { useCartLines } from './hooks/useCartLines'
 
+import Hero from './components/Hero'
+
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
   const [comparison, setComparison] = useState(null)
@@ -88,23 +90,7 @@ function App() {
 
   return (
     <main className="shell">
-      <section className="hero">
-        <div>
-          <p className="eyebrow">Grocerfy</p>
-          <h1>Find the cheapest supermarket for your basket.</h1>
-          <p className="lede">
-            Add items from the seeded catalogue, send the cart to the backend, and compare each store’s availability and total.
-          </p>
-        </div>
-
-        <div className="summary-card">
-          <span className="summary-label">Cart items</span>
-          <strong>{basketQuantity}</strong>
-          <span className="summary-copy">
-            {selectedProducts.length === 1 ? '1 product selected' : `${selectedProducts.length} products selected`}
-          </span>
-        </div>
-      </section>
+      <Hero basketQuantity={basketQuantity} selectedProducts={selectedProducts.length} />
 
       <section className="panel grid filtered-grid">
         <div className="catalog-column">
