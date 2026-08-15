@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DietaryFilterBar from './components/DietaryFilterBar'
+import { fetchProducts } from './api/productsApi'
+import { compareBasket } from './api/basketApi'
+import { syncBasketWithFilteredProducts } from './utils/basketSync'
 
 const emptyCartLine = { productId: '', quantity: 1 }
 
@@ -28,14 +31,8 @@ function App() {
       try {
         const params = new URLSearchParams()
         dietaryTags.forEach((tag) => params.append('dietary', tag))
-        const suffix = params.toString() ? `?${params}` : ''
 
-        const response = await fetch(`/api/product${suffix}`)
-        if (!response.ok) {
-          throw new Error('Unable to load products.')
-        }
-
-        const data = await response.json()
+        const data = await fetchProducts(dietaryTags)
         if (!active) {
           return
         }
@@ -43,17 +40,7 @@ function App() {
         setProducts(data)
         setError('')
 
-        // A product already in the basket can fall outside the new filter.
-        // Issue #32 requires those to stop being selectable, so the line is
-        // cleared rather than left pointing at an option that is now absent.
-        const visibleIds = new Set(data.map((product) => product.productId))
-        setCartLines((currentLines) =>
-          currentLines.map((line) =>
-            line.productId === '' || visibleIds.has(Number(line.productId))
-              ? line
-              : { ...line, productId: '' },
-          ),
-        )
+        setCartLines((currentLines) => syncBasketWithFilteredProducts(currentLines, data))
 
         if (!hasPrefilledBasket.current && data.length > 0) {
           hasPrefilledBasket.current = true
@@ -136,18 +123,7 @@ function App() {
           })),
       }
 
-      const response = await fetch('/api/basket/compare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Unable to compare basket.')
-      }
+      const data = await compareBasket(payload)
 
       setComparison(data)
     } catch (submitError) {

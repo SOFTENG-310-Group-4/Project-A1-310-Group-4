@@ -1,4 +1,4 @@
-import { DIETARY_TAGS } from './dietaryTags'
+import { DIETARY_TAGS } from '../constants/dietaryTags'
 
 /**
  * Dietary tag filter (issue #32).

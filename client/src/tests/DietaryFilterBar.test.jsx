@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import DietaryFilterBar from '../components/DietaryFilterBar'
-import { DIETARY_TAGS } from '../components/dietaryTags'
+import { DIETARY_TAGS } from '../constants/dietaryTags'
 
 /**
  * Unit tests for the dietary filter sidebar (issue #32).
