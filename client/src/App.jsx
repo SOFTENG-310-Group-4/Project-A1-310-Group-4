@@ -7,6 +7,7 @@ import { useCartLines } from './hooks/useCartLines'
 
 import Hero from './components/Hero'
 import CatalogueList from './components/CatalogueList'
+import BasketForm from './components/BasketForm'
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
@@ -99,71 +100,19 @@ function App() {
             onClear={clearDietaryTags}
             matchCount={products.length}
           />
-
           <CatalogueList products={products} catalogueLoading={catalogueLoading} />
-          
         </div>
 
-        <form className="basket-form" onSubmit={handleSubmit}>
-          <div className="section-heading">
-            <h2>Basket</h2>
-            <button type="button" className="ghost-button" onClick={addLine}>Add item</button>
-          </div>
-
-          <div className="basket-lines">
-            {cartLines.map((line, index) => (
-              <div key={`${index}-${line.productId}`} className="basket-line">
-                <label>
-                  Product
-                  <select
-                    value={line.productId}
-                    onChange={(event) => updateLine(index, 'productId', event.target.value)}
-                    disabled={products.length === 0}
-                  >
-                    <option value="">Select a product</option>
-                    {products.map((product) => {
-                      const isSelectedElsewhere = cartLines.some(
-                        (otherLine, otherIndex) =>
-                          otherIndex !== index && String(otherLine.productId) === String(product.productId)
-                      )
-
-                      return (
-                        <option
-                          key={product.productId}
-                          value={product.productId}
-                          disabled={isSelectedElsewhere}
-                        >
-                          {product.displayName}
-                          {isSelectedElsewhere ? ' (Already added)' : ''}
-                        </option>
-                      )
-                    })}
-                  </select>
-                </label>
-
-                <label>
-                  Quantity
-                  <input
-                    type="number"
-                    min="1"
-                    value={line.quantity}
-                    onChange={(event) => updateLine(index, 'quantity', event.target.value)}
-                  />
-                </label>
-
-                <button type="button" className="ghost-button subtle" onClick={() => removeLine(index)}>
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <button type="submit" className="primary-button" disabled={loading || products.length === 0}>
-            {loading ? 'Comparing stores...' : 'Compare basket'}
-          </button>
-
-          {error ? <p className="error-banner">{error}</p> : null}
-        </form>
+        <BasketForm
+          cartLines={cartLines}
+          products={products}
+          loading={loading}
+          error={error}
+          onAddLine={addLine}
+          onRemoveLine={removeLine}
+          onUpdateLine={updateLine}
+          onSubmit={handleSubmit}
+        />
       </section>
 
       {comparison ? (
