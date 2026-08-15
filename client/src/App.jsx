@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DietaryFilterBar from './components/DietaryFilterBar'
-import { fetchProducts } from './api/productsApi'
 import { compareBasket } from './api/basketApi'
 import { syncBasketWithFilteredProducts } from './utils/basketSync'
+import { useProductCatalogue } from './hooks/useProductCatalogue'
 
 const emptyCartLine = { productId: '', quantity: 1 }
 
 function App() {
-  const [products, setProducts] = useState([])
   const [dietaryTags, setDietaryTags] = useState([])
   const [cartLines, setCartLines] = useState([{ ...emptyCartLine }])
   const [comparison, setComparison] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [catalogueLoading, setCatalogueLoading] = useState(true)
   const [error, setError] = useState('')
 
   // The catalogue is pre-filled with the first product on the very first load
@@ -22,47 +20,21 @@ function App() {
 
   // Filtering happens server-side: /api/products carries no dietary flags, so
   // the search endpoint from #14 is the only source that can apply the tags.
-  useEffect(() => {
-    let active = true
+  function handleProductsLoaded(data) {
+    setError('')
+    setCartLines((currentLines) => syncBasketWithFilteredProducts(currentLines, data))
 
-    async function loadProducts() {
-      setCatalogueLoading(true)
-
-      try {
-        const params = new URLSearchParams()
-        dietaryTags.forEach((tag) => params.append('dietary', tag))
-
-        const data = await fetchProducts(dietaryTags)
-        if (!active) {
-          return
-        }
-
-        setProducts(data)
-        setError('')
-
-        setCartLines((currentLines) => syncBasketWithFilteredProducts(currentLines, data))
-
-        if (!hasPrefilledBasket.current && data.length > 0) {
-          hasPrefilledBasket.current = true
-          setCartLines([{ productId: String(data[0].productId), quantity: 1 }])
-        }
-      } catch (loadError) {
-        if (active) {
-          setError(loadError.message)
-        }
-      } finally {
-        if (active) {
-          setCatalogueLoading(false)
-        }
-      }
+    if (!hasPrefilledBasket.current && data.length > 0) {
+      hasPrefilledBasket.current = true
+      setCartLines([{ productId: String(data[0].productId), quantity: 1 }])
     }
+  }
 
-    loadProducts()
-
-    return () => {
-      active = false
-    }
-  }, [dietaryTags])
+  const { products, loading: catalogueLoading } = useProductCatalogue(
+    dietaryTags, 
+    handleProductsLoaded, 
+    setError,
+  )
 
   const selectedProducts = useMemo(() => {
     const ids = new Set(cartLines.map((line) => Number(line.productId)).filter(Boolean))
