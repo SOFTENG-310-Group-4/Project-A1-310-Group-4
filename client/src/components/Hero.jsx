@@ -16,7 +16,7 @@ function Hero({ basketQuantity, selectedProducts }) {
           <span className="summary-label">Cart items</span>
           <strong>{basketQuantity}</strong>
           <span className="summary-copy">
-            {selectedProducts.length === 1 ? '1 product selected' : `${selectedProducts.length} products selected`}
+            {selectedProducts === 1 ? '1 product selected' : `${selectedProducts} products selected`}
           </span>
         </div>
       </section>

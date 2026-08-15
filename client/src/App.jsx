@@ -6,6 +6,7 @@ import { useProductCatalogue } from './hooks/useProductCatalogue'
 import { useCartLines } from './hooks/useCartLines'
 
 import Hero from './components/Hero'
+import CatalogueList from './components/CatalogueList'
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
@@ -60,8 +61,6 @@ function App() {
     setDietaryTags([])
   }
 
-
-
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
@@ -101,27 +100,8 @@ function App() {
             matchCount={products.length}
           />
 
-          <aside className="catalog-card">
-            <div className="section-heading">
-              <h2>Catalogue</h2>
-              <span>{products.length} products</span>
-            </div>
-
-            {catalogueLoading ? <p className="filter-summary">Loading catalogue...</p> : null}
-
-            {!catalogueLoading && products.length === 0 ? (
-              <p className="filter-summary">No products match every selected dietary tag.</p>
-            ) : null}
-
-            <ul className="catalog-list">
-              {products.map((product) => (
-                <li key={product.productId}>
-                  <strong>{product.displayName}</strong>
-                  <span>{product.productName}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
+          <CatalogueList products={products} catalogueLoading={catalogueLoading} />
+          
         </div>
 
         <form className="basket-form" onSubmit={handleSubmit}>
