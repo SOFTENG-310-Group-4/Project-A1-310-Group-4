@@ -105,6 +105,11 @@ npm test
 • Look for issues labeled "Good First Issue"
 • Leave a comment asking if they can be assigned to it before starting work
 
+## Custom labels for the project
+• We have a few custom labels which contributors should use if it is applicable for an issue
+• The refactor label should be applied whenever an issue relates to refactoring code
+• The test coverage label should be applied whenever an issue relates to tests or test coverage
+
 ## Technical requirements for contributions (for example, should tests be included with each code change? links to style guidelines or other project conventions)
 •   Code should follow [Google Java Style](https://google.github.io/styleguide/javaguide.html)
 •   All logic changes should include unit tests
