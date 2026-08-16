@@ -19,6 +19,7 @@ function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLi
                         line={line}
                         index={index}
                         products={products}
+                        cartLines={cartLines}
                         onChange={onUpdateLine}
                         onRemove={onRemoveLine}
                     />
