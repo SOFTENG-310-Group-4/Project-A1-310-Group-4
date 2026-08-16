@@ -5,11 +5,12 @@ import BasketLine from './BasketLine'
  * "Add item" button, and a "Compare basket" button.
  */
 function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLine, onUpdateLine, onSubmit}) {
+
     return (
         <form className="basket-form" onSubmit={onSubmit}>
             <div className="section-heading">
                 <h2>Basket</h2>
-                <button type="button" className="ghost-button" onClick={onAddLine}>Add item</button>
+                <button type="button"className="ghost-button"onClick={onAddLine}>Add item</button>
             </div>
 
             <div className="basket-lines">

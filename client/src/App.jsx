@@ -50,7 +50,7 @@ function App() {
     () => cartLines.reduce((total, line) => total + Number(line.quantity || 0), 0),
     [cartLines],
   )
-
+  
   function toggleDietaryTag(tag) {
     setDietaryTags((currentTags) =>
       currentTags.includes(tag)
@@ -89,6 +89,20 @@ function App() {
     }
   }
 
+  function handleAddLine() {
+    const hasEmptyLine = cartLines.some(
+        (line) => line.productId === ''
+    )
+
+    const selectedProductCount = cartLines.filter(
+        (line) => line.productId !== ''
+    ).length
+
+    if (!hasEmptyLine && selectedProductCount < products.length) {
+        addLine()
+    }
+}
+
   return (
     <main className="shell">
       <Hero basketQuantity={basketQuantity} selectedProducts={selectedProducts.length} />
@@ -109,7 +123,7 @@ function App() {
           products={products}
           loading={loading}
           error={error}
-          onAddLine={addLine}
+          onAddLine={handleAddLine}
           onRemoveLine={removeLine}
           onUpdateLine={updateLine}
           onSubmit={handleSubmit}
