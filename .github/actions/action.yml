@@ -152,7 +152,7 @@ runs:
           -Dsonar.projectBaseDir=.
           -Dsonar.sources=server/src/main/java,server/src/main/resources,client/src 
           -Dsonar.tests=server/src/test/java,client/src/tests
-          -Dsonar.exclusions=client/node_modules/**,client/dist/**,server/target/**
+          -Dsonar.exclusions=client/node_modules/**,client/dist/**,server/target/**,client/src/test/**
           -Dsonar.java.binaries=server/target/classes
           ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.scm.revision=', github.event.workflow_run.head_sha) || '' }}
           ${{ github.event.workflow_run.event == 'pull_request' && format('{0}{1}', '-Dsonar.pullrequest.key=', env.pr_number) || '' }}
