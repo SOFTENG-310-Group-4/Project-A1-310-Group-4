@@ -4,13 +4,36 @@ import BasketLine from './BasketLine'
  * Form for the basket, containing list of BasketLine rows, an
  * "Add item" button, and a "Compare basket" button.
  */
-function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLine, onUpdateLine, onSubmit}) {
+function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLine, onUpdateLine, onSubmit, setError }) {
+
+    function handleAddLine() {
+    const hasEmptyLine = cartLines.some(
+        (line) => line.productId === ''
+    )
+
+    const selectedProductCount = cartLines.filter(
+        (line) => line.productId !== ''
+    ).length
+
+    if (hasEmptyLine) {
+        setError('Please select a product before adding another item.')
+        return
+    }
+
+    if (selectedProductCount >= products.length) {
+        setError('All available products have already been added.')
+        return
+    }
+
+    setError('')
+    onAddLine()
+}
 
     return (
         <form className="basket-form" onSubmit={onSubmit}>
             <div className="section-heading">
                 <h2>Basket</h2>
-                <button type="button"className="ghost-button"onClick={onAddLine}>Add item</button>
+                <button type="button"className="ghost-button"onClick={handleAddLine}>Add item</button>
             </div>
 
             <div className="basket-lines">

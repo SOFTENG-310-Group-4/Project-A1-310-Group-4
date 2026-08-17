@@ -90,20 +90,6 @@ function App() {
     }
   }
 
-  function handleAddLine() {
-    const hasEmptyLine = cartLines.some(
-        (line) => line.productId === ''
-    )
-
-    const selectedProductCount = cartLines.filter(
-        (line) => line.productId !== ''
-    ).length
-
-    if (!hasEmptyLine && selectedProductCount < products.length) {
-        addLine()
-    }
-}
-
   return (
     <main className="shell">
       <Hero basketQuantity={basketQuantity} selectedProducts={selectedProducts.length} />
@@ -124,10 +110,11 @@ function App() {
           products={products}
           loading={loading}
           error={error}
-          onAddLine={handleAddLine}
+          onAddLine={addLine}
           onRemoveLine={removeLine}
           onUpdateLine={updateLine}
           onSubmit={handleSubmit}
+          setError={setError}
         />
       </section>
       
