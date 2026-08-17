@@ -70,8 +70,8 @@ public class Store {
 
 	public String getDisplayName() {
 		if (region == null || region.isBlank()) {
-			return storeName + " - " + region;
+			return storeName;
 		}
-		return storeName + " - " + region + ", " + region;
+		return storeName + " - " + region;
 	}
 }
