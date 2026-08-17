@@ -25,7 +25,6 @@ function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLi
         return
     }
 
-    setError('')
     onAddLine()
 }
 
