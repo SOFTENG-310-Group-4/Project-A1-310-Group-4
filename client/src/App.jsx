@@ -70,17 +70,18 @@ function App() {
     setComparison(null)
 
     try {
+      const validLines = cartLines.filter((line) => line.productId !== '')
+
       const payload = {
-        items: cartLines
-          .filter((line) => line.productId !== '')
-          .map((line) => ({
-            productId: Number(line.productId),
-            quantity: Number(line.quantity),
-          })),
+        items: validLines.map((line) => ({
+          productId: Number(line.productId),
+          quantity: Number(line.quantity),
+        })),
       }
 
       const data = await compareBasket(payload)
 
+      setCartLines(validLines)
       setComparison(data)
     } catch (submitError) {
       setError(submitError.message)

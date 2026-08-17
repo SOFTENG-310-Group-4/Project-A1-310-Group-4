@@ -4,9 +4,7 @@
  */
 export function syncBasketWithFilteredProducts(currentLines, visibleProducts) {
     const visibleIds = new Set(visibleProducts.map((product) => product.productId))
-    return currentLines.map((line) => 
-    line.productId === '' || visibleIds.has(Number(line.productId)) 
-        ? line
-        : { ...line, productId: '' },
+    return currentLines.filter(
+        (line) => line.productId === '' || visibleIds.has(Number(line.productId)),
     )
 }
