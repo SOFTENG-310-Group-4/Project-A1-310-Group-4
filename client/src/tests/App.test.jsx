@@ -156,7 +156,7 @@ describe('basket interaction with the filter', () => {
     })
   })
 
-  it('clears a basket line whose product falls outside the filter', async () => {
+  it('removes a basket line whose product falls outside the filter', async () => {
     const user = await renderAndLoad()
 
     const select = screen.getByRole('combobox')
@@ -165,8 +165,9 @@ describe('basket interaction with the filter', () => {
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
 
-    // Trim Milk is not vegan, so the line must stop pointing at it.
-    await waitFor(() => expect(screen.getByRole('combobox')).toHaveValue(''))
+    // Trim Milk is not vegan, so the line must be removed entirely, 
+    // rather than being left behind as an empty "Select a product" row.
+    await waitFor(() => expect(screen.queryByRole('combobox')).not.toBeInTheDocument())
   })
 
   it('keeps a basket line whose product still matches the filter', async () => {
