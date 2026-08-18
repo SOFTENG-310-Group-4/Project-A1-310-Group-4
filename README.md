@@ -29,17 +29,17 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
 #### Backend
 1. From the project root, navigate to the server folder with `cd server`
 2. Start the backend server with `./mvnw spring-boot:run` (Mac/Linux) or `.\mvnw.cmd spring-boot:run` (Windows).
-3. Near the bottom of the terminal, you should see "Started GrocerfyApplication". This server runs on http://localhost:8080
+3. Near the bottom of the terminal, you should see "Started GrocerfyApplication". This server runs on http://localhost:8080. You do not need to open this link to run Grocerfy
 #### Frontend
 1. From the project root, navigate to the client folder with `cd client`
 2. Start the web server with `run npm dev`
-3. The terminal should show a link to http://localhost:5173
+3. The terminal should show a link to http://localhost:5173. This is the main interface that you use to interact with Grocerfy
 ### Testing Installation
 #### Running Test Suites
 * Backend:
     * Navigate to the server folder with `cd server`
     * Then run `./mvnw clean compile test` (Mac/Linux) or `.\mvnw.cmd clean compile test` (Windows)
-* Frontend
+* Frontend:
     * Navigate to the client folder wtih `cd client`
     * Then run `npm test`
 
