@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -192,4 +192,27 @@ describe('basket interaction with the filter', () => {
     await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=vegan'))
     expect(screen.getByRole('combobox')).toHaveValue('3')
   })
+
+  it('restores the basket after the app is reopened', async () => {
+  const user = await renderAndLoad()
+
+  await user.selectOptions(screen.getByRole('combobox'), '3')
+
+  const quantityInput = screen.getByRole('spinbutton')
+  await user.clear(quantityInput)
+  await user.type(quantityInput, '2')
+
+  // Simulate closing the app.
+  cleanup()
+
+  // Simulate reopening the app.
+  render(<App />)
+
+  await waitFor(() => {
+    expect(within(catalogue()).getByText('Apple')).toBeInTheDocument()
+  })
+
+  expect(screen.getByRole('combobox')).toHaveValue('3')
+  expect(screen.getByRole('spinbutton')).toHaveValue(2)
+})
 })
