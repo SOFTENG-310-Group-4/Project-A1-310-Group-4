@@ -165,11 +165,19 @@ Further in-depth instructions of the above can be found inside our [README.md](h
 - Leave a comment asking if they can be assigned to it before starting work
 
 ## Custom labels
-- We have a few custom labels which contributors should use if it is applicable for an issue
+We have a few custom labels which contributors should use if it is applicable for an issue.
 
-- The refactor label should be applied whenever an issue relates to refactoring code
+Label | Meaning
+---- | ----
+`A1` | Planned for the Assignment 1 release
+`A2` | Deferred to the Assignment 2 iteration
+`frontend` | UI and user experience work
+`backend` | Java application logic and data model
+`security` | Raised by Snyk or otherwise security-related
+`refactor` | Improving code structure without changing functionality
+`test coverage` | Adding or improving automated tests
 
-- The test coverage label should be applied whenever an issue relates to tests or test coverage
+These custom labels can also be found in the [wiki](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/wiki/Project-Management#labels).
 
 ## Technical requirements for contributions
 - Code should follow [Google Java Style](https://google.github.io/styleguide/javaguide.html)
