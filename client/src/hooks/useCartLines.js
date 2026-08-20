@@ -26,7 +26,7 @@ export function useCartLines(initialLines = [{...EMPTY_CART_LINE }]) {
         try {
             return JSON.parse(savedLines)
         } catch {
-            return [{...EMPTY_CART_LINE}]
+            return initialLines
         }
     }
 
