@@ -27,12 +27,22 @@ function App() {
   // the search endpoint from #14 is the only source that can apply the tags.
   function handleProductsLoaded(data) {
     setError('')
-    setCartLines((currentLines) => syncBasketWithFilteredProducts(currentLines, data))
+    setCartLines((currentLines) => {
+      const syncBasketLines = syncBasketWithFilteredProducts(currentLines, data)
 
-    if (!hasPrefilledBasket.current && data.length > 0) {
+      if (
+        !hasPrefilledBasket.current &&
+        data.length > 0 &&
+        syncBasketLines.length === 1 &&
+        syncBasketLines[0].productId === ''
+      ) {
+        hasPrefilledBasket.current = true
+        return [{ productId: String(data[0].productId), quantity: 1 }]
+      }
+
       hasPrefilledBasket.current = true
-      setCartLines([{ productId: String(data[0].productId), quantity: 1 }])
-    }
+      return syncBasketLines
+    })
   }
 
   const { products, loading: catalogueLoading } = useProductCatalogue(
