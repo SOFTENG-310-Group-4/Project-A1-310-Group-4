@@ -32,7 +32,7 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
 3. Near the bottom of the terminal, you should see "Started GrocerfyApplication". This server runs on http://localhost:8080. You do not need to open this link to run Grocerfy
 #### Frontend
 1. From the project root, navigate to the client folder with `cd client`
-2. Start the web server with `run npm dev`
+2. Start the web server with `npm run dev`
 3. The terminal should show a link to http://localhost:5173. This is the main interface that you use to interact with Grocerfy
 ### Testing Installation
 #### Running Test Suites
@@ -43,7 +43,8 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
     * Navigate to the client folder wtih `cd client`
     * Then run `npm test`
 
-**Note:** Running the frontend test suites does not require the backend server to be running.
+**Note:** Running the frontend test suites does not require the backend server to be running. The first run of `npm test` may take noticeably longer than later runs, as Vitest compiles the test files and sets up the environment before caching them. Subsequent runs are much faster.
+
 #### Verifying Visually
 * Backend:
     * After launching server, the terminal shows "Started GrocerfyApplication" without errors. Then visit http://localhost:8080/api/product, you should see a JSON response with the different products
