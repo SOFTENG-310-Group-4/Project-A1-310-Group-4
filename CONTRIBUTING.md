@@ -6,7 +6,7 @@ environment.
 
 ## How to file a bug report
 
-Before you submit an issue make sure to search through existing issues to see if your question was already answered. 
+Before you submit an issue, make sure to search through existing issues to see if your question was already answered. 
 
 If your issue has not already been mentioned and appears to be a bug then you can create a new issue following the [bug report template](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/blob/main/.github/ISSUE_TEMPLATE/bug_report.md)
 
@@ -19,19 +19,23 @@ When filing an issue try your best to answer the following:
 - Operating system and processor architecture (if relevant)
 - Set of steps to replicate the same issue?  
 
+**Note:** Bug reports should be approved by all team members before work is done on them. The submitter will be asked to provide clarification if details are missing or unclear. 
+
 ## How to suggest a new feature
-- Before creating an issue, search for issues if that feature has already been requested
+- Before creating an issue, search for issues if that feature has already been requested.
 
-- Detail why you think that issue would be useful 
+- Detail why you think that issue would be useful.
 
-- Use the [feature request template](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/blob/main/.github/ISSUE_TEMPLATE/feature_request.md)
+- Use the [feature request template](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/blob/main/.github/ISSUE_TEMPLATE/feature_request.md).
 
-- New features must be approved during team meetings
+- Note any dependencies (issues or otherwise, e.g. depends on #17) clearly in the issue if relevant.
+
+- New issues, including features and bug reports, must be approved during team meetings before work begins.
 
 ## How to submit a pull request (and what happens next)
-- See Github for existing pull requests to prevent duplicates
+- See GitHub for existing pull requests to prevent duplicates.
 
-- Make sure you are working out of your own forked repository of the main group repository
+- Make sure you are working out of your own forked repository of the main group repository.
 
 - Make sure your fork is synced with the main repository when making changes e.g.
 
@@ -40,10 +44,13 @@ When filing an issue try your best to answer the following:
 git remote add upstream https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4
 
 git checkout main
-git pull upstream main
+git fetch upstream
+git rebase upstream/main
 git push origin main
 ```
-- Have your work on a new branch when making changes
+- Have your work on a new branch when making changes.
+- Remember to rebase often and don't wait until all changes have been made.
+- If a change is large consider splitting the work across smaller pull requests and using a feature flag.
 
 ### Our naming convention for branches 
 
@@ -66,23 +73,31 @@ production.
 
 #### Then you can...
 
-1.  Save your changes locally and run against test cases
+1.  Save your changes locally and run against test cases.
 
-2.  Commit changes with a descriptive message
+2.  Commit changes with a descriptive message.
 
-3.  Push branch to your personal fork (origin)
+3.  Push branch to your personal fork (origin).
 
-4.  On your personal fork repository you can click the yellow "Compare & pull request" banner that appears at the top.
+4.  On your personal fork repository, you can click the yellow "Compare & pull request" banner that appears at the top.
 
 5.  Remember to set Base repository, Base, Head repository and Compare to the right locations. 
 
-6.  Add a clear title, and include what you worked on in the description and reference the issue number e.g. closes #17.
+6.  Add a clear title describing changes made, include what you worked on in the description and reference the issue number e.g. closes #17. If an issue is worked on by more than one team member, it must be documented in both the issue and pull request comments.
 
-7.  At least one member must review and approve the PR before merging (no self-merging)
+7.  At least one member must review and approve the PR before merging (no self-merging). Reviewers should pull the branch locally and run the test suite and ensure everything works as expected. The reviewer can approve with a comment using the approve option under files changed.
 
-8.  If changes are suggested then make the required changes, recheck if tests are passing and then commit and push to the github repository which will update your pull request. 
+8.  If changes are suggested then make the required changes on the same feature branch and re-test. Do not create a new issue for fixing errors found in code review on a pull request. 
 
-9.  After your pull request is merged, you can delete your feature branch (locally and on your fork) and pull the latest changes from upstream.
+9.  After your pull request is approved, your commits should be squashed and merge conflicts fixed. You can delete your feature branch (locally and on your fork) and pull the latest changes from upstream.
+
+The steps above are also detailed in the [wiki](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/wiki/Project-Management#development-workflow).
+
+## Code Quality & Vulnerability Analysis (Sonar & Snyk)
+
+**Sonar (Code Analysis):** All contributors should utilise SonarQube inside their IDE. SonarCloud analysis will be running on the main branch and pull requests so make sure it passes before merging into main. 
+
+**Snyk (Vulnerability Analysis):** Snyk will be used for security analysis. There should be automatic pull requests (PRs) for both new and existing backlog vulnerabilities. Do not combine fixes. Maintain default behaviour of exactly one PR per vulnerability. Merge patches promptly unless blocked by breaking changes.
 
 
 ## How to set up your environment and run tests
@@ -94,6 +109,10 @@ production.
 - JDK 17 or higher
 - Node.js (v18+) & npm
 - Git
+
+#### Recommended:
+
+- SonarQube plugin for IDE
 
 Clone your personal fork directory with:
 ```bash
@@ -158,11 +177,13 @@ Further in-depth instructions of the above can be found inside our [README.md](h
 
 
 ## How contributors can get started if they are newcomers 
-- Look on Github repository issues tab
+- Look on GitHub repository issues tab.
 
-- Look for issues labeled "Good First Issue"
+- Look for issues labeled "Good First Issue".
 
-- Leave a comment asking if they can be assigned to it before starting work
+- Leave a comment asking if they can be assigned to it before starting work.
+
+- Remember to have a maximum of one claimed open issue at a time.
 
 ## Custom labels
 We have a few custom labels which contributors should use if it is applicable for an issue.
@@ -180,13 +201,13 @@ Label | Meaning
 These custom labels can also be found in the [wiki](https://github.com/SOFTENG-310-Group-4/Project-A1-310-Group-4/wiki/Project-Management#labels).
 
 ## Technical requirements for contributions
-- Code should follow [Google Java Style](https://google.github.io/styleguide/javaguide.html)
+- Code should follow the [Google Java Style](https://google.github.io/styleguide/javaguide.html).
 
--  All logic changes should include unit tests
+-  All logic changes should include unit tests.
 
 ## Our roadmap/vision for Grocerfy
 This project aims to inform shoppers about which grocery store is the cheapest and closest
-according to their shopping needs. It would allow students to minimise time wasted on grocery shopping by eliminating the need to search across multiple grocery store websites and provide them with the closest stores. It would indirectly encourage them to cook healthier meals by reducing the hassle and cost of grocery shopping.
+according to their shopping needs. It allows students to minimise time wasted on grocery shopping by eliminating the need to search across multiple grocery store websites and providing them with the closest stores. It would indirectly encourage them to cook healthier meals by reducing the hassle and cost of grocery shopping.
 
 ### Feature Roadmap
 #### A1 (Present)
