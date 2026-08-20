@@ -13,7 +13,8 @@ export function useCartLines(initialLines = [{...EMPTY_CART_LINE }]) {
     const [cartLines, setCartLines] = useState(() => getSavedCartLines(initialLines))
 
     useEffect(() => {
-        localStorage.setItem(KEEP_BASKET_STATE_KEY, JSON.stringify(cartLines))
+        const safeLines = isValidCartLines(cartLines) ? cartLines : []
+        localStorage.setItem(KEEP_BASKET_STATE_KEY, JSON.stringify(safeLines))
     }, [cartLines])
 
     function getSavedCartLines(initialLines) {
@@ -24,7 +25,8 @@ export function useCartLines(initialLines = [{...EMPTY_CART_LINE }]) {
         }
 
         try {
-            return JSON.parse(savedLines)
+            const parsed = JSON.parse(savedLines)
+            return isValidCartLines(parsed) ? parsed : initialLines
         } catch {
             return initialLines
         }
@@ -47,4 +49,21 @@ export function useCartLines(initialLines = [{...EMPTY_CART_LINE }]) {
     }
 
     return { cartLines, setCartLines, updateLine, addLine, removeLine }
+}
+
+/**
+ * Validate that data read from or written to localStorage is actually a basket and not anything malicious.
+ * Addresses security flag picked up by Sonar.
+ */
+function isValidCartLines(parsedValue) {
+    return (
+        Array.isArray(parsedValue) &&
+        parsedValue.every(
+             (line) =>
+                line !== null &&
+                typeof line === 'object' &&
+                typeof line.productId === 'string' &&
+                (typeof line.quantity === 'number' || typeof line.quantity === 'string'),
+        )
+    )
 }
