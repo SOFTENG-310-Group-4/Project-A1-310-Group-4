@@ -25,7 +25,7 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
 2. Run `npm install` to install the frontend dependencies. 
     - On Windows, if `npm` commands are blocked with a "running scripts is disabled" error, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` once in PowerShell. 
 ### Deployment
-**Note:** For the best experience, run the backend and frontend servers in separate terminals. The backend server **must** be started before launching the frontend server.
+**Note:** The backend server **must** be started before launching the frontend server.
 #### Backend
 1. From the project root, navigate to the server folder with `cd server`
 2. Start the backend server with `./mvnw spring-boot:run` (Mac/Linux) or `.\mvnw.cmd spring-boot:run` (Windows).
@@ -43,7 +43,7 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
     * Navigate to the client folder wtih `cd client`
     * Then run `npm test`
 
-**Note:** Running the frontend test suites does not require the backend server to be running. The first run of `npm test` may take noticeably longer than later runs, as Vitest compiles the test files and sets up the environment before caching them. Subsequent runs are much faster.
+**Note:** Running the frontend test suites does not require the backend server to be running.
 
 #### Verifying Visually
 * Backend:
