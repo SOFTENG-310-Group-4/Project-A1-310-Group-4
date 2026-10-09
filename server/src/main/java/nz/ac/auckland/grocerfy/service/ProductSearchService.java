@@ -26,25 +26,37 @@ public class ProductSearchService {
 	}
 
 	/**
-	 * Find products whose name contains the given query and which carry every one
-	 * of the requested dietary tags.
-	 * @param query   substring to match against the product name, case-insensitive
-	 * @param dietary dietary tag names, matched products must carry all of them
+	 * Finds products whose name contains the given text, which carry every requested dietary tag
+	 * and none of the listed allergens.
+	 * @param query     substring to match against the product name (case-insensitive); null or blank matches all
+	 * @param dietary   dietary tags a product must all carry; null or empty means no dietary filter
+	 * @param allergens allergens a product must not contain; null or empty means no allergen filter
 	 * @return matching products ordered by name
 	 */
 	@Transactional(readOnly = true)
 	public List<ProductSearchResponse> search(String query, Set<Dietary> dietary, Set<Allergen> allergens) {
 
-		String pattern = (query == null || query.isBlank())
-				? "%"
-				: "%" + query.trim().toLowerCase() + "%";
+		// empty strings are treated as displaying all, otherwise wrap in % wildcard
+		String pattern;
+		if (query == null || query.isBlank()) {
+			pattern = "%";
+		} else {
+			// first remove all existing wildcards in query
+			String noPercent = query.replace("%", "");
+			String noWildcards = noPercent.replace("_", "");
+
+			pattern = "%" + noWildcards.trim() + "%";
+		}
+
+		Set<Dietary> requiredDietary = dietary == null ? Set.of() : dietary;
+		Set<Allergen> excludedAllergens = allergens == null ? Set.of() : allergens;
 
 		return productRepository.search(
 				pattern,
-				dietary,
-				dietary.size(),
-				allergens,
-				allergens.size()
+				requiredDietary,
+				requiredDietary.size(),
+				excludedAllergens,
+				excludedAllergens.size()
 				)
 				.stream()
 				.map(this::toResponse)
@@ -53,7 +65,6 @@ public class ProductSearchService {
 
 	private ProductSearchResponse toResponse(Product product) {
 		return new ProductSearchResponse(
-				product.getId(),
 				product.getProductName(),
 				product.getSize(),
 				product.getAllergens(),
