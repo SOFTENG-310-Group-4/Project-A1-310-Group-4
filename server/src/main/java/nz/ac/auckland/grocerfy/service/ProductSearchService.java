@@ -1,15 +1,14 @@
 package nz.ac.auckland.grocerfy.service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import nz.ac.auckland.grocerfy.dto.ProductSearchResponse;
+import nz.ac.auckland.grocerfy.model.Allergen;
+import nz.ac.auckland.grocerfy.model.Dietary;
 import nz.ac.auckland.grocerfy.model.Product;
 import nz.ac.auckland.grocerfy.repository.ProductRepository;
 
@@ -20,13 +19,6 @@ import nz.ac.auckland.grocerfy.repository.ProductRepository;
 @Service
 public class ProductSearchService {
 
-	private static final String LACTOSE_FREE = "lactosefree";
-	private static final String GLUTEN_FREE = "glutenfree";
-	private static final String VEGETARIAN = "vegetarian";
-	private static final String VEGAN = "vegan";
-
-	private static final Set<String> SUPPORTED_TAGS = Set.of(LACTOSE_FREE, GLUTEN_FREE, VEGETARIAN, VEGAN);
-
 	private final ProductRepository productRepository;
 
 	public ProductSearchService(ProductRepository productRepository) {
@@ -34,67 +26,48 @@ public class ProductSearchService {
 	}
 
 	/**
-	 * Find products whose name contains the given query and which carry every one
-	 * of the requested dietary tags.
-	 * @param query   substring to match against the product name, case-insensitive
-	 * @param dietary dietary tag names, matched products must carry all of them
+	 * Finds products whose name contains the given text, which carry every requested dietary tag
+	 * and none of the listed allergens.
+	 * @param query     substring to match against the product name (case-insensitive); null or blank matches all
+	 * @param dietary   dietary tags a product must all carry; null or empty means no dietary filter
+	 * @param allergens allergens a product must not contain; null or empty means no allergen filter
 	 * @return matching products ordered by name
 	 */
 	@Transactional(readOnly = true)
-	public List<ProductSearchResponse> search(String query, List<String> dietary) {
-		Set<String> tags = normaliseTags(dietary);
+	public List<ProductSearchResponse> search(String query, Set<Dietary> dietary, Set<Allergen> allergens) {
 
-		String pattern = (query == null || query.isBlank())
-				? "%"
-				: "%" + query.trim().toLowerCase() + "%";
+		// empty strings are treated as displaying all, otherwise wrap in % wildcard
+		String pattern;
+		if (query == null || query.isBlank()) {
+			pattern = "%";
+		} else {
+			// first remove all existing wildcards in query
+			String noPercent = query.replace("%", "");
+			String noWildcards = noPercent.replace("_", "");
+
+			pattern = "%" + noWildcards.trim() + "%";
+		}
+
+		Set<Dietary> requiredDietary = dietary == null ? Set.of() : dietary;
+		Set<Allergen> excludedAllergens = allergens == null ? Set.of() : allergens;
 
 		return productRepository.search(
 				pattern,
-				tags.contains(LACTOSE_FREE),
-				tags.contains(GLUTEN_FREE),
-				tags.contains(VEGETARIAN),
-				tags.contains(VEGAN))
+				requiredDietary,
+				requiredDietary.size(),
+				excludedAllergens,
+				excludedAllergens.size()
+				)
 				.stream()
 				.map(this::toResponse)
 				.toList();
 	}
 
-	/**
-	 * Normalise supplied tag names by lowercasing and stripping separators, so
-	 * "gluten-free", "gluten_free" and "glutenFree" are all accepted.
-	 */
-	private Set<String> normaliseTags(List<String> dietary) {
-		Set<String> tags = new HashSet<>();
-		if (dietary == null) {
-			return tags;
-		}
-
-		for (String raw : dietary) {
-			if (raw == null || raw.isBlank()) {
-				continue;
-			}
-			String tag = raw.trim().toLowerCase().replaceAll("[^a-z]", "");
-			if (!SUPPORTED_TAGS.contains(tag)) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-						"Unknown dietary tag: '" + raw.trim() + "'. Supported tags are: "
-								+ "lactose_free, gluten_free, vegetarian, vegan.");
-			}
-			tags.add(tag);
-		}
-		return tags;
-	}
-
 	private ProductSearchResponse toResponse(Product product) {
 		return new ProductSearchResponse(
-				product.getProductId(),
-				product.getName(),
-				product.getDisplayName(),
-				product.getBrand(),
-				product.getCategory(),
-				product.getPackageSize(),
-				product.isLactoseFree(),
-				product.isGlutenFree(),
-				product.isVegetarian(),
-				product.isVegan());
+				product.getProductName(),
+				product.getSize(),
+				product.getAllergens(),
+				product.getDietInfo());
 	}
 }
