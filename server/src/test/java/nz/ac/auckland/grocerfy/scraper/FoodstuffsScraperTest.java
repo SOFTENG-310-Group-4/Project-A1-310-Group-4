@@ -8,22 +8,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
+import nz.ac.auckland.grocerfy.dto.ProductInfo;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
 
@@ -252,5 +259,20 @@ public class FoodstuffsScraperTest {
 		var result = scraper.getProductInfo("5000001-EA-000", "store-uuid");
  
         assertThat(result.getSecond()).containsExactly(Dietary.NONGMO);
+	}
+
+	@Test 
+	void extractProductDataGetsAllProducts() {
+		Document doc;
+		try (InputStream in = FoodstuffsScraperTest.class.getResourceAsStream("/test_dom.txt")) {
+			doc = Jsoup.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+		} catch (IOException exc) {
+			throw new IllegalStateException("test file test_dom.txt triggered IO error");
+		}
+
+		List<ProductInfo> products = scraper.extractProducts(doc);
+		assertEquals(50, products.size());
+		// first product should be butter
+		assertEquals("Pams Pure Butter", products.get(0).productName());
 	}
 }

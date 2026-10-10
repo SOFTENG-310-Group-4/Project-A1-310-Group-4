@@ -114,5 +114,6 @@ public class ScraperDatabaseService {
     @Transactional
     public void clearPrices() {
         storePriceRepository.deleteAllInBatch();
+        priceCache.clear();
     }
 }
