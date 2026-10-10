@@ -13,6 +13,8 @@ import nz.ac.auckland.grocerfy.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+    // notably there's no pagination, which could cause issues in frontend rendering.
+
     /**
      * Search products by name substring.
      *
