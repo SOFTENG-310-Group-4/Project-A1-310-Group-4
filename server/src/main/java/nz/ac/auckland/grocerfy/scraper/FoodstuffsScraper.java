@@ -47,18 +47,30 @@ public class FoodstuffsScraper extends SupermarketScraper{
     protected String authToken;
 
     /**
+     * Wrapper method for testing, encapsulating the HttpUtils.sendHttpRequest() method.
+     * @param <T> The type for the response body data
+     * @param request The request object to send
+     * @param handler The body handler determining the response body data type
+     * @return An HttpResponse if successful, else Optional.empty().
+     * @see nz.ac.auckland.grocerfy.util.HttpUtils#sendHttpRequest(HttpRequest, BodyHandler)
+     */
+    protected <T> Optional<HttpResponse<T>> send(HttpRequest request, BodyHandler<T> handler) {
+        return HttpUtils.sendHttpRequest(request, handler);
+    }
+
+    /**
      * If the itemDescription field from getProductInfo matches any dietary strings,
      * add to the dietary set.
      * @param dietSet the set of dietary enums relevant to the product
      * @param facet The facet map, containing "itemCode" and "itemDescription".
      */
     private void addDietaryIfMatch(Set<Dietary> dietSet, JsonNode facet) {
-        String facetName = facet.get("itemDescription").asText();
+        String facetName = facet.path("itemDescription").asText();
         for (Dietary diet : Dietary.values()) {
             if (facetName.equalsIgnoreCase(diet.getKeyword())) {
                 dietSet.add(diet);
                 System.out.println("adding dietary " + facetName);
-                break;
+                return;
             }
         }
     }
@@ -91,7 +103,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .headers(HttpUtils.getGetHeaders())
             .GET()
             .build();
-        HttpUtils.sendHttpRequest(homepageRequest, HttpResponse.BodyHandlers.discarding());
+        send(homepageRequest, HttpResponse.BodyHandlers.discarding());
 
         refreshCookies();
     }
@@ -107,7 +119,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .build();
 
         // if auth token cannot be retrieved, nothing else to do, should terminate.
-        Optional<HttpResponse<String>> authOptional = HttpUtils.sendHttpRequest(authRequest, HttpResponse.BodyHandlers.ofString());
+        Optional<HttpResponse<String>> authOptional = send(authRequest, HttpResponse.BodyHandlers.ofString());
         if (authOptional.isEmpty()) {
             throw new IllegalStateException("Auth token cannot be established.");
         }
@@ -118,11 +130,13 @@ public class FoodstuffsScraper extends SupermarketScraper{
             authToken = authNode.get("access_token").asText();
         } catch (JsonProcessingException exc) {
             throw new IllegalStateException("Auth token cannot be established.");
+        } catch (NullPointerException exc) {
+            throw new IllegalStateException("Auth token request returned no body. API change?");
         }
     }
 
     public <T> HttpResponse<T> sendRequestWithAuth(HttpRequest request, BodyHandler<T> handler) {
-        Optional<HttpResponse<T>> responseOptional = HttpUtils.sendHttpRequest(request, handler);
+        Optional<HttpResponse<T>> responseOptional = send(request, handler);
         if (responseOptional.isEmpty()) { // shouldn't get here unless through other exceptions
             throw new IllegalStateException("Request returns null, unexpected (is the link valid?)");
         }
@@ -140,7 +154,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
                 .GET()
                 .build();
 
-            Optional<HttpResponse<T>> responseOptional2 = HttpUtils.sendHttpRequest(newRequest, handler);
+            Optional<HttpResponse<T>> responseOptional2 = send(newRequest, handler);
             if (responseOptional2.isEmpty()) { // shouldn't get here unless through other exceptions
                 throw new IllegalStateException("Request returns null, unexpected (is the link valid?)");
             }
@@ -166,8 +180,9 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .headers(originRefererHeader)
             .POST(HttpRequest.BodyPublishers.ofString("{}"))
             .build();
-        Optional<HttpResponse<Void>> responseOptional = HttpUtils.sendHttpRequest(req, HttpResponse.BodyHandlers.discarding());
-        return responseOptional.isPresent();
+        Optional<HttpResponse<Void>> responseOptional = send(req, HttpResponse.BodyHandlers.discarding());
+        // if response exists, and has a non-failure status code
+        return responseOptional.isPresent() && responseOptional.get().statusCode() < 400;
     }
 
     public List<ProductInfo> extractProducts(Document pageData) {
