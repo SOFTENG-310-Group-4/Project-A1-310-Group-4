@@ -38,21 +38,27 @@ import nz.ac.auckland.grocerfy.util.HttpUtils;
 
 @Service
 public class WebScraperService {
+    // debug flag - true=always runs scraper
     private boolean bypassTimeDebug = false;
 
-    private static final int SCRAPE_DELAY_MIN = 1000;
-    private static final int SCRAPE_DELAY_MAX = 3000;
+    private static final int DEFAULT_SCRAPE_DELAY_MIN = 1000;
+    private static final int DEFAULT_SCRAPE_DELAY_MAX = 3000;
 
-    private static final Map<String, SupermarketScraper> scrapers = Map.of(
+    private static final Map<String, SupermarketScraper> DEFAULT_SCRAPERS = Map.of(
         "Pak'nSave", new PaknsaveScraper(),
         "New World", new NewWorldScraper()
     );
+
+    private final Map<String, SupermarketScraper> scrapers;
 
     private SupermarketScraper currentScraper;
 
     private final ScraperDatabaseService databaseService;
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private int requestDelayMin;
+    private int requestDelayMax;
 
     @Value ("classpath:scrape_targets.json")
     private Resource targets;
@@ -61,7 +67,22 @@ public class WebScraperService {
     public WebScraperService(
         ScraperDatabaseService databaseService
     ) {
+        this(databaseService, DEFAULT_SCRAPERS, DEFAULT_SCRAPE_DELAY_MIN, DEFAULT_SCRAPE_DELAY_MAX);
+    }
+
+    // package private for dependency injection during tests
+    WebScraperService(
+            ScraperDatabaseService databaseService,
+            Map<String, SupermarketScraper> scraperMappings,
+            int requestDelayMin,
+            int requestDelayMax) {
+
         this.databaseService = databaseService;
+        this.scrapers = scraperMappings;
+        this.requestDelayMin = requestDelayMin;
+        this.requestDelayMax = requestDelayMax;
+
+
     }
 
     /**
@@ -132,7 +153,7 @@ public class WebScraperService {
      */
     private void randomRequestDelay() {
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextLong(SCRAPE_DELAY_MIN, SCRAPE_DELAY_MAX + 1L));
+            Thread.sleep(ThreadLocalRandom.current().nextLong(requestDelayMin, requestDelayMax + 1L));
         } catch (InterruptedException exc) {
             Thread.currentThread().interrupt();
         }
