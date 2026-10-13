@@ -47,7 +47,7 @@ public class RecipeService {
     }
 
     String ingredients =
-        products.stream().map(Product::getDisplayName).collect(Collectors.joining(", "));
+        products.stream().map(Product::getProductName).collect(Collectors.joining(", "));
 
     List<String> rawTags = request.dietaryTags();
     List<String> tags;

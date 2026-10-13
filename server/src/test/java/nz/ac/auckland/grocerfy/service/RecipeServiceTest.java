@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Set;
 import nz.ac.auckland.grocerfy.apiproxy.ApiProxyClient;
 import nz.ac.auckland.grocerfy.apiproxy.ApiProxyRequest;
 import nz.ac.auckland.grocerfy.apiproxy.ApiProxyResponse;
@@ -32,6 +33,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
 
+  private static final String APPLE = "Apple";
+  private static final String MILK = "Milk";
+  private static final String RECIPE_TEXT = "Recipe text.";
+
   @Mock private ProductRepository productRepository;
   @Mock private ApiProxyClient apiProxyClient;
 
@@ -42,8 +47,8 @@ class RecipeServiceTest {
     recipeService = new RecipeService(productRepository, apiProxyClient);
   }
 
-  private static Product product(long id, String name) {
-    return new Product(id, name, null, "category", null, true, true, true, true);
+  private static Product product(String name) {
+    return new Product(name, "1kg", Set.of(), Set.of());
   }
 
   @Test
@@ -91,10 +96,10 @@ class RecipeServiceTest {
   }
 
   @Test
-  void buildsThePromptFromProductDisplayNamesAndTags() {
+  void buildsThePromptFromProductNamesAndTags() {
     when(productRepository.findAllById(List.of(1L, 2L)))
-        .thenReturn(List.of(product(1L, "Apple"), product(2L, "Milk")));
-    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse("Recipe text."));
+        .thenReturn(List.of(product(APPLE), product(MILK)));
+    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse(RECIPE_TEXT));
 
     RecipeSuggestionRequest request =
         new RecipeSuggestionRequest(
@@ -103,20 +108,20 @@ class RecipeServiceTest {
 
     String result = recipeService.suggest(request);
 
-    assertThat(result).isEqualTo("Recipe text.");
+    assertThat(result).isEqualTo(RECIPE_TEXT);
 
     ArgumentCaptor<ApiProxyRequest> captor = ArgumentCaptor.forClass(ApiProxyRequest.class);
     verify(apiProxyClient).send(captor.capture());
 
     String prompt = captor.getValue().userPrompt();
 
-    assertThat(prompt).contains("Apple").contains("Milk").contains("vegan, gluten_free");
+    assertThat(prompt).contains(APPLE).contains(MILK).contains("vegan, gluten_free");
   }
 
   @Test
   void usesNoneWhenDietaryTagsAreNull() {
-    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(1L, "Apple")));
-    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse("Recipe text."));
+    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(APPLE)));
+    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse(RECIPE_TEXT));
 
     RecipeSuggestionRequest request =
         new RecipeSuggestionRequest(List.of(new BasketItemRequest(1L, 1)), null);
@@ -130,8 +135,8 @@ class RecipeServiceTest {
 
   @Test
   void usesNoneWhenDietaryTagsAreEmpty() {
-    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(1L, "Apple")));
-    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse("Recipe text."));
+    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(APPLE)));
+    when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse(RECIPE_TEXT));
 
     RecipeSuggestionRequest request =
         new RecipeSuggestionRequest(List.of(new BasketItemRequest(1L, 1)), List.of());
@@ -145,7 +150,7 @@ class RecipeServiceTest {
 
   @Test
   void returnsTheContentFromTheApiProxy() {
-    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(1L, "Apple")));
+    when(productRepository.findAllById(List.of(1L))).thenReturn(List.of(product(APPLE)));
     when(apiProxyClient.send(any())).thenReturn(new ApiProxyResponse("Tomato pasta with garlic."));
 
     RecipeSuggestionRequest request =

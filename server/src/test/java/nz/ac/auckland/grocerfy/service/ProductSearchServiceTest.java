@@ -1,60 +1,130 @@
 package nz.ac.auckland.grocerfy.service;
 
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import nz.ac.auckland.grocerfy.dto.ProductSearchResponse;
+import nz.ac.auckland.grocerfy.model.Allergen;
+import nz.ac.auckland.grocerfy.model.Dietary;
 import nz.ac.auckland.grocerfy.model.Product;
 import nz.ac.auckland.grocerfy.repository.ProductRepository;
 
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest
+@Import(ProductSearchService.class)
 class ProductSearchServiceTest {
-
-	@Mock
+	private static final Set<Dietary> NO_DIETARY = Set.of();
+	private static final Set<Allergen> NO_ALLERGENS = Set.of();
+	private final Map<String, Product> availableProducts = new HashMap<>();
+	@Autowired 
 	private ProductRepository productRepository;
 
-	@InjectMocks
-	private ProductSearchService productSearchService;
+	@Autowired
+	private ProductSearchService service;
 
-	@Test
-	void searchMatchesCaseInsensitiveQueryAndDietaryFlags() {
-		Product product = new Product(7L, "Apple", "Fresh", "Fruit", "1kg", true, false, true, true);
-		when(productRepository.search("%apple%", true, false, true, true)).thenReturn(List.of(product));
+	// HELPER METHODS
+	private static Set<Allergen> allergens(Allergen... values) {
+		Set<Allergen> set = EnumSet.noneOf(Allergen.class);
+		set.addAll(List.of(values));
+		return set;
+	}
+ 
+	private static Set<Dietary> diets(Dietary... values) {
+		Set<Dietary> set = EnumSet.noneOf(Dietary.class);
+		set.addAll(List.of(values));
+		return set;
+	}
 
-		List<ProductSearchResponse> results = productSearchService.search("apple", List.of("lactose_free", "vegetarian", "vegan"));
+	private ProductSearchResponse nameToResponse(String name) {
+		Product product = availableProducts.get(name);
+		return new ProductSearchResponse(
+			product.getProductName(),
+			product.getSize(),
+			product.getAllergens(),
+			product.getDietInfo()
+		);
+	}
 
-		assertThat(results).hasSize(1);
-		assertThat(results.get(0).productName()).isEqualTo("Apple");
-		assertThat(results.get(0).displayName()).isEqualTo("Fresh Apple");
-		assertThat(results.get(0).lactoseFree()).isTrue();
-		assertThat(results.get(0).glutenFree()).isFalse();
-		verify(productRepository).search("%apple%", true, false, true, true);
+	// HELPER METHODS END
+
+
+	@BeforeEach
+	void seed() {
+		List<Product> products = productRepository.saveAllAndFlush(List.of(
+			new Product("Oat Milk", "500mL", allergens(Allergen.GLUTEN), diets(Dietary.VEGAN, Dietary.VEGETARIAN)),
+			new Product("Milk", "2L", allergens(Allergen.DAIRY), diets(Dietary.VEGETARIAN)),
+			new Product("Apple", "1kg", allergens(), diets(Dietary.VEGAN, Dietary.VEGETARIAN)),
+			new Product("Potato Chips", "250g", allergens(), diets(Dietary.VEGAN, Dietary.VEGETARIAN)),
+			new Product("Chicken Nuggets", "1kg", allergens(Allergen.GLUTEN), diets())
+		));
+		for (Product product : products) {
+			availableProducts.put(product.getProductName(), product);
+		}
+	}
+
+
+	@Test 
+	void nullOrBlankSearchReturnsAllProducts() {
+		List<ProductSearchResponse> allProducts = List.of(
+			nameToResponse("Milk"),
+			nameToResponse("Oat Milk"),
+			nameToResponse("Apple"),
+			nameToResponse("Potato Chips"),
+			nameToResponse("Chicken Nuggets")
+		);
+		assertThat(service.search(null, NO_DIETARY, NO_ALLERGENS)).containsAll(allProducts);
+		assertThat(service.search("", NO_DIETARY, NO_ALLERGENS)).containsAll(allProducts);
+	}
+
+	@Test 
+	void searchTrimsWhitespace() {
+		List<ProductSearchResponse> allProducts = List.of(
+			nameToResponse("Milk"),
+			nameToResponse("Oat Milk"),
+			nameToResponse("Apple"),
+			nameToResponse("Potato Chips"),
+			nameToResponse("Chicken Nuggets")
+		);
+		assertThat(service.search("     ", NO_DIETARY, NO_ALLERGENS)).containsAll(allProducts);
+		assertThat(service.search("     milk    ", NO_DIETARY, NO_ALLERGENS)).containsAll(
+			List.of(nameToResponse("Milk"), nameToResponse("Oat Milk"))
+		);
 	}
 
 	@Test
-	void searchIgnoresBlankTagsAndAcceptsAlternativeSpellings() {
-		when(productRepository.search("%", false, true, false, true)).thenReturn(List.of());
+	void expectedProductsFromNoQueryButFilter() {
+		assertThat(service.search("", Set.of(Dietary.VEGAN), NO_ALLERGENS)).containsAll(
+			List.of(nameToResponse("Apple"), nameToResponse("Oat Milk"), nameToResponse("Potato Chips"))
+		);
+	}
 
-		List<ProductSearchResponse> results = productSearchService.search(null, List.of(" ", "gluten-free", "vegan"));
-
-		assertThat(results).isEmpty();
-		verify(productRepository).search("%", false, true, false, true);
+	@Test 
+	void unmatchedQueryReturnsNoProducts() {
+		assertThat(service.search("unmatchable strings", NO_DIETARY, NO_ALLERGENS)).isEmpty();
 	}
 
 	@Test
-	void searchRejectsUnknownDietaryTag() {
-		assertThatThrownBy(() -> productSearchService.search("apple", List.of("carnivore")))
-				.isInstanceOf(ResponseStatusException.class)
-				.hasMessageContaining("Unknown dietary tag");
+	void unmatchedFilterReturnsNoProducts() {
+		assertThat(service.search("", Set.of(Dietary.ORGANIC), Set.of(Allergen.EGG))).isEmpty();
+	}
+
+	@Test
+	void wildCardQueryNulled() {
+		assertThat(service.search("mi_l%k", NO_DIETARY, NO_ALLERGENS)).containsAll(
+			List.of(nameToResponse("Milk"), nameToResponse("Oat Milk"))
+		);
 	}
 }
+

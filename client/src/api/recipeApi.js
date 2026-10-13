@@ -17,7 +17,14 @@ export async function suggestRecipes(payload) {
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(text || "Unable to suggest recipes.");
+    let message = "Unable to suggest recipes.";
+    try {
+      const body = JSON.parse(text);
+      message = body.error || body.message || message;
+    } catch {
+      message = text || message;
+    }
+    throw new Error(message);
   }
 
   return text;
