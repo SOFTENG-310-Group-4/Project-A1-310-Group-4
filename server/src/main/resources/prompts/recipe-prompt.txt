@@ -1,0 +1,7 @@
+You are a recipe assistant. Create one short, simple recipe using the ingredients below.
+
+INGREDIENTS IN BASKET:
+{{ingredients}}
+
+DIETARY REQUIREMENTS:
+{{dietary}}
