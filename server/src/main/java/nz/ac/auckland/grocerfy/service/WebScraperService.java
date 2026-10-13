@@ -192,7 +192,9 @@ public class WebScraperService {
                     }    
                 );
                 
-                StorePrice productPrice = new StorePrice(product, store, productInfo.price());
+                // member price (e.g. Everyday Rewards) is kept alongside the shelf price, if the site has one
+                StorePrice productPrice = new StorePrice(product, store, productInfo.price(),
+                    productInfo.memberPrice(), currentScraper.getLoyaltyProgram());
 
                 databaseService.saveProductPrice(productPrice);
             }

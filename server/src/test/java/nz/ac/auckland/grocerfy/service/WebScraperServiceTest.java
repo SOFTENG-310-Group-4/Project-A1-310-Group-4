@@ -2,6 +2,7 @@ package nz.ac.auckland.grocerfy.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,7 +34,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import nz.ac.auckland.grocerfy.dto.ProductInfo;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.model.Product;
+import nz.ac.auckland.grocerfy.model.StorePrice;
 import nz.ac.auckland.grocerfy.repository.ProductRepository;
 import nz.ac.auckland.grocerfy.repository.StorePriceRepository;
 import nz.ac.auckland.grocerfy.repository.StoreRepository;
@@ -239,6 +242,25 @@ public class WebScraperServiceTest {
 		serviceWith(stubbedScrapeTargets()).checkAndScrapeOnStartup();
 
 		verify(scraper, never()).setupCookies();
+	}
+
+	@Test
+	void memberPricesAreSavedWithTheScrapersLoyaltyProgram() {
+		givenScraperReturns(
+				new ProductInfo("Yoghurt", new BigDecimal("4.75"), "750g", "ID-Y", new BigDecimal("4.20")),
+				info("Bread", "600g", "3.00", "ID-B"));
+		when(scraper.getLoyaltyProgram()).thenReturn(LoyaltyProgram.EVERYDAY_REWARDS);
+
+		serviceWith(stubbedScrapeTargets()).scheduledScrape();
+
+		Map<String, StorePrice> pricesByProduct = storePriceRepository.findAllWithRelations().stream()
+				.collect(Collectors.toMap(price -> price.getProduct().getProductName(), price -> price));
+		StorePrice yoghurt = pricesByProduct.get("Yoghurt");
+		assertEquals(0, new BigDecimal("4.20").compareTo(yoghurt.getMemberPrice()));
+		assertEquals(LoyaltyProgram.EVERYDAY_REWARDS, yoghurt.getLoyaltyProgram());
+		// no member price: nothing stored for the programme either
+		assertNull(pricesByProduct.get("Bread").getMemberPrice());
+		assertNull(pricesByProduct.get("Bread").getLoyaltyProgram());
 	}
 
 	@Test

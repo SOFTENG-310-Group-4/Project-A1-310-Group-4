@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nz.ac.auckland.grocerfy.dto.ProductInfo;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.util.HttpUtils;
 
 /**
@@ -86,7 +87,11 @@ public class WoolworthsScraper extends SupermarketScraper {
         + " My { products(searchInput: $searchInput) { totalPages currentPage"
         + " results { __typename ... on ProductSummary {"
         + " sku productName slug storeKey"
-        + " variants { unitOfMeasure variantPrice { sellingPrice sellingUnit } } } } } } }";
+        + " variants { unitOfMeasure variantPrice { sellingPrice sellingUnit } }"
+        + " tags { type userSegmentId decisionInputs } } } } } }"; // tags carry Everyday Rewards member prices
+
+    /** Product tag holding the Everyday Rewards member price, e.g. decisionInputs.promotionalPrice = 529 (cents). */
+    private static final String MEMBER_PRICE_TAG = "MemberPrice";
 
     /** Search filters ("facets") the site offers, mapped to our Dietary tags. */
     private static final Map<String, Dietary> DIETARY_FACETS = new LinkedHashMap<>();
@@ -491,9 +496,44 @@ public class WoolworthsScraper extends SupermarketScraper {
             String size = extractSize(name, variant.path("unitOfMeasure").asText(""));
             // product pages live at /shop/product-details/{sku}/{slug}, so the id carries both
             String productId = sku + "/" + result.path("slug").asText("");
-            products.add(new ProductInfo(name, price, size, productId));
+            BigDecimal memberPrice = extractMemberPrice(result.path("tags"), price,
+                variant.path("variantPrice").path("sellingUnit").asText(""));
+            products.add(new ProductInfo(name, price, size, productId, memberPrice));
         }
         return products;
+    }
+
+    /**
+     * Reads the Everyday Rewards member price from a product's tags, e.g.
+     * {"type": "MemberPrice", "userSegmentId": "rewards-member", "decisionInputs": {"promotionalPrice": 529, "uom": "EA"}}.
+     * @param tags the product's tags
+     * @param shelfPrice the regular price; a member price that isn't lower is ignored
+     * @param sellingUnit the unit the shelf price is for ("EA", "KG"); a member price for another unit is ignored
+     * @return the member price in dollars, or null if the product has none
+     */
+    static BigDecimal extractMemberPrice(JsonNode tags, BigDecimal shelfPrice, String sellingUnit) {
+        for (JsonNode tag : tags) {
+            if (!MEMBER_PRICE_TAG.equals(tag.path("type").asText())) {
+                continue;
+            }
+            JsonNode inputs = tag.path("decisionInputs");
+            JsonNode cents = inputs.path("promotionalPrice");
+            String unit = inputs.path("uom").asText("");
+            if (!cents.isNumber() || (!unit.isEmpty() && !sellingUnit.isEmpty() && !unit.equalsIgnoreCase(sellingUnit))) {
+                continue;
+            }
+            BigDecimal memberPrice = new BigDecimal(cents.asText()).movePointLeft(2);
+            if (memberPrice.signum() > 0 && memberPrice.compareTo(shelfPrice) < 0) {
+                return memberPrice;
+            }
+        }
+        return null;
+    }
+
+    /** Member prices on Woolworths are Everyday Rewards prices. */
+    @Override
+    public LoyaltyProgram getLoyaltyProgram() {
+        return LoyaltyProgram.EVERYDAY_REWARDS;
     }
 
     /**

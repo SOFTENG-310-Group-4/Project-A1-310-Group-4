@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import nz.ac.auckland.grocerfy.dto.MissingItemResponse;
 import nz.ac.auckland.grocerfy.dto.ProductSummaryResponse;
 import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.StoreLineItemResponse;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.model.Product;
 import nz.ac.auckland.grocerfy.model.Store;
 import nz.ac.auckland.grocerfy.model.StorePrice;
@@ -48,7 +51,8 @@ public class BasketComparisonService {
 	/**
 	 * Compare a basket payload against all stores in the catalogue.
 	 *
-	 * @param request basket request with product IDs and quantities
+	 * @param request basket request with product IDs and quantities, and optionally the shopper's
+	 *        loyalty programmes (member prices are used instead of shelf prices for those)
 	 * @return response containing store comparison results and the cheapest available store
 	 */
 	@Transactional(readOnly = true)
@@ -57,6 +61,10 @@ public class BasketComparisonService {
 		if (basketItems.isEmpty()) {
 			throw new IllegalArgumentException("Basket must contain at least one item.");
 		}
+		// loyalty programmes the shopper belongs to; their member prices replace shelf prices
+		Set<LoyaltyProgram> memberships = request.loyaltyPrograms() == null
+				? Set.of()
+				: request.loyaltyPrograms().stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 
 		// Normalize basket items by product ID and sum duplicate quantities.
 		Map<Long, BasketItemRequest> normalizedItems = new LinkedHashMap<>();
@@ -88,7 +96,7 @@ public class BasketComparisonService {
 				.collect(Collectors.groupingBy(storePrice -> storePrice.getStore().getId()));
 
 		List<StoreComparisonResponse> stores = storeRepository.findAll().stream()
-				.map(store -> toStoreComparison(store, pricesByStore.getOrDefault(store.getId(), List.of()), normalizedItems, productsById))
+				.map(store -> toStoreComparison(store, pricesByStore.getOrDefault(store.getId(), List.of()), normalizedItems, productsById, memberships))
 				.sorted(Comparator.comparing(StoreComparisonResponse::available).reversed()
 						.thenComparing(StoreComparisonResponse::availableSubtotal, Comparator.nullsLast(Comparator.naturalOrder())))
 				.toList();
@@ -115,13 +123,17 @@ public class BasketComparisonService {
 	private StoreComparisonResponse toStoreComparison(Store store,
 			List<StorePrice> storePrices,
 			Map<Long, BasketItemRequest> basketItems,
-			Map<Long, Product> productsById) {
+			Map<Long, Product> productsById,
+			Set<LoyaltyProgram> memberships) {
 		Map<Long, StorePrice> storePricesByProduct = storePrices.stream()
 				.collect(Collectors.toMap(price -> price.getProduct().getId(), price -> price));
 
 		List<StoreLineItemResponse> lineItems = new ArrayList<>();
 		List<MissingItemResponse> missingItems = new ArrayList<>();
 		BigDecimal subtotal = BigDecimal.ZERO;
+		BigDecimal memberSavingApplied = BigDecimal.ZERO;
+		BigDecimal memberSavingAvailable = BigDecimal.ZERO;
+		LoyaltyProgram storeProgram = null;
 
 		for (BasketItemRequest item : basketItems.values()) {
 			Product product = productsById.get(item.productId());
@@ -131,14 +143,34 @@ public class BasketComparisonService {
 				continue;
 			}
 
-			BigDecimal lineTotal = price.getPrice().multiply(BigDecimal.valueOf(item.quantity())).setScale(2, RoundingMode.HALF_UP);
+			BigDecimal quantity = BigDecimal.valueOf(item.quantity());
+			BigDecimal regularUnitPrice = price.getPrice().setScale(2, RoundingMode.HALF_UP);
+			BigDecimal unitPrice = regularUnitPrice;
+			boolean memberPriceApplied = false;
+
+			if (hasMemberDiscount(price)) {
+				storeProgram = price.getLoyaltyProgram();
+				BigDecimal memberUnitPrice = price.getMemberPrice().setScale(2, RoundingMode.HALF_UP);
+				BigDecimal lineSaving = regularUnitPrice.subtract(memberUnitPrice).multiply(quantity);
+				if (memberships.contains(price.getLoyaltyProgram())) {
+					unitPrice = memberUnitPrice;
+					memberPriceApplied = true;
+					memberSavingApplied = memberSavingApplied.add(lineSaving);
+				} else {
+					memberSavingAvailable = memberSavingAvailable.add(lineSaving);
+				}
+			}
+
+			BigDecimal lineTotal = unitPrice.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
 			subtotal = subtotal.add(lineTotal);
 			lineItems.add(new StoreLineItemResponse(
 					product.getId(),
 					product.getProductName(),
 					item.quantity(),
-					price.getPrice().setScale(2, RoundingMode.HALF_UP),
-					lineTotal));
+					unitPrice,
+					lineTotal,
+					regularUnitPrice,
+					memberPriceApplied));
 		}
 
 		boolean available = missingItems.isEmpty();
@@ -151,6 +183,19 @@ public class BasketComparisonService {
 				available,
 				availableSubtotal,
 				lineItems,
-				missingItems);
+				missingItems,
+				storeProgram,
+				memberSavingApplied.setScale(2, RoundingMode.HALF_UP),
+				memberSavingAvailable.setScale(2, RoundingMode.HALF_UP));
+	}
+
+	/**
+	 * A store price offers a member discount when it has a member price, the programme it belongs to,
+	 * and the member price is actually lower than the shelf price.
+	 */
+	private static boolean hasMemberDiscount(StorePrice price) {
+		return price.getMemberPrice() != null
+				&& price.getLoyaltyProgram() != null
+				&& price.getMemberPrice().compareTo(price.getPrice()) < 0;
 	}
 }

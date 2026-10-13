@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nz.ac.auckland.grocerfy.dto.ProductInfo;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.util.HttpUtils;
 
 public abstract class SupermarketScraper {
@@ -103,6 +104,14 @@ public abstract class SupermarketScraper {
      * @return
      */
     public abstract Pair<Set<Allergen>, Set<Dietary>> getProductInfo(String productId, String storeUuid);
+
+    /**
+     * The loyalty programme that the member prices in this scraper's ProductInfo belong to.
+     * @return the programme, or null for supermarkets without per-product member prices (the default)
+     */
+    public LoyaltyProgram getLoyaltyProgram() {
+        return null;
+    }
 
     /**
      * Sets how many pages a paginated scraper reads per link. Values below 1 are treated as 1.

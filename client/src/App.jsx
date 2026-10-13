@@ -12,6 +12,7 @@ import ResultsPanel from './components/ResultsPanel'
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
+  const [loyaltyPrograms, setLoyaltyPrograms] = useState([])
   const [comparison, setComparison] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -73,8 +74,11 @@ function App() {
     setDietaryTags([])
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  /**
+   * Compares the current basket, applying member prices for the given loyalty programmes.
+   * loyaltyPrograms is only sent when a card is selected, so the request is unchanged otherwise.
+   */
+  async function runComparison(programs) {
     setError('')
     setLoading(true)
     setComparison(null)
@@ -88,6 +92,9 @@ function App() {
           quantity: Number(line.quantity),
         })),
       }
+      if (programs.length > 0) {
+        payload.loyaltyPrograms = programs
+      }
 
       const data = await compareBasket(payload)
 
@@ -97,6 +104,24 @@ function App() {
       setError(submitError.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    return runComparison(loyaltyPrograms)
+  }
+
+  // Flipping a card while results are showing re-runs the comparison, so the
+  // totals and cheapest store always match the toggles.
+  function toggleLoyaltyProgram(program) {
+    const nextPrograms = loyaltyPrograms.includes(program)
+      ? loyaltyPrograms.filter((current) => current !== program)
+      : [...loyaltyPrograms, program]
+
+    setLoyaltyPrograms(nextPrograms)
+    if (comparison && !loading) {
+      runComparison(nextPrograms)
     }
   }
 
@@ -125,6 +150,8 @@ function App() {
           onUpdateLine={updateLine}
           onSubmit={handleSubmit}
           setError={setError}
+          loyaltyPrograms={loyaltyPrograms}
+          onToggleLoyaltyProgram={toggleLoyaltyProgram}
         />
       </section>
       

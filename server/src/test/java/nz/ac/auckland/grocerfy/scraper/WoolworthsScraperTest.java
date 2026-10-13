@@ -37,6 +37,7 @@ import org.springframework.data.util.Pair;
 import nz.ac.auckland.grocerfy.dto.ProductInfo;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 
 /**
  * Unit tests for WoolworthsScraper. The network is replaced by queued canned responses; the fixtures
@@ -234,6 +235,51 @@ public class WoolworthsScraperTest {
 		ProductInfo mince = products.get(2);
 		assertEquals("Woolworths Essentials Beef Mince Value 400g", mince.productName());
 		assertEquals("400g", mince.productSize());
+	}
+
+	// ------------------------------------------------------------------ Everyday Rewards member prices
+
+	@Test
+	void extractProductsReadsEverydayRewardsMemberPrice() {
+		List<ProductInfo> products = scraper.extractProducts(resource("/woolworths/search_page_member_price.json"));
+
+		// real product: $4.75 shelf, MemberPrice tag with promotionalPrice 420 (cents)
+		ProductInfo yoghurt = products.get(0);
+		assertEquals("Gopala Yoghurt Tub Natural Full Cream 750g", yoghurt.productName());
+		assertEquals(new BigDecimal("4.75"), yoghurt.price());
+		assertEquals(new BigDecimal("4.20"), yoghurt.memberPrice());
+
+		// broccoli has a multibuy tag with a promotionalPrice too, which is not a member price
+		ProductInfo broccoli = products.get(1);
+		assertNull(broccoli.memberPrice());
+	}
+
+	@Test
+	void memberPriceIsIgnoredWhenNotCheaperForAnotherUnitOrMissing() throws Exception {
+		com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+		String memberTag = "[{\"type\":\"MemberPrice\",\"userSegmentId\":\"rewards-member\","
+			+ "\"decisionInputs\":{\"promotionalPrice\":%s,\"uom\":\"%s\"}}]";
+
+		assertEquals(new BigDecimal("4.20"), WoolworthsScraper.extractMemberPrice(
+			json.readTree(String.format(memberTag, "420", "EA")), new BigDecimal("4.75"), "EA"));
+		// not lower than the shelf price
+		assertNull(WoolworthsScraper.extractMemberPrice(
+			json.readTree(String.format(memberTag, "475", "EA")), new BigDecimal("4.75"), "EA"));
+		// priced per each, but the shelf price is per kg
+		assertNull(WoolworthsScraper.extractMemberPrice(
+			json.readTree(String.format(memberTag, "300", "EA")), new BigDecimal("3.99"), "KG"));
+		// no tags at all
+		assertNull(WoolworthsScraper.extractMemberPrice(json.readTree("[]"), new BigDecimal("4.75"), "EA"));
+	}
+
+	@Test
+	void searchQueryRequestsTagsAndMemberPricesBelongToEverydayRewards() {
+		scraper.enqueue(200, searchPage("9228", 1, "1"));
+		enqueueDietarySearches("9228", null, null, null);
+		scraper.fetchProducts(CATEGORY);
+
+		assertTrue(bodyOf(scraper.sentRequests.get(0)).contains("tags { type userSegmentId decisionInputs }"));
+		assertEquals(LoyaltyProgram.EVERYDAY_REWARDS, scraper.getLoyaltyProgram());
 	}
 
 	@Test
