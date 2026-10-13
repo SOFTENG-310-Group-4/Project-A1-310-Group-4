@@ -3,7 +3,6 @@ package nz.ac.auckland.grocerfy.service;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -13,8 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -23,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -66,15 +62,11 @@ public class WebScraperServiceTest {
 
 	private ScraperDatabaseService databaseService;
 	private SupermarketScraper scraper;
-	private HttpResponse<String> page;
 
 	@BeforeEach
-	@SuppressWarnings("unchecked")
 	void setUp() {
 		databaseService = new ScraperDatabaseService(productRepository, storeRepository, storePriceRepository);
 		scraper = mock(SupermarketScraper.class);
-		page = mock(HttpResponse.class);
-		when(page.body()).thenReturn("<html></html>"); // Jsoup.parse rejects null
 	}
 
 	private static Set<Allergen> allergens(Allergen... values) {
@@ -124,11 +116,10 @@ public class WebScraperServiceTest {
 		return new ProductInfo(name, new BigDecimal(price), size, id);
 	}
 
-	/** Every page the scraper "fetches" yields these products; every product-info lookup returns no tags. */
+	/** Every link the scraper "fetches" yields these products; every product-info lookup returns no tags. */
 	private void givenScraperReturns(ProductInfo... products) {
 		when(scraper.changeStore(anyString())).thenReturn(true);
-		when(scraper.<String>sendRequestWithAuth(any(HttpRequest.class), any())).thenReturn(page);
-		when(scraper.extractProducts(any(Document.class))).thenReturn(List.of(products));
+		when(scraper.fetchProducts(anyString())).thenReturn(List.of(products));
 		when(scraper.getProductInfo(anyString(), anyString())).thenReturn(Pair.of(allergens(), diets()));
 	}
 
@@ -167,7 +158,7 @@ public class WebScraperServiceTest {
 		serviceWith(stubbedScrapeTargets()).scheduledScrape();
 
 		assertEquals(0, storeRepository.count());
-		verify(scraper, never()).extractProducts(any(Document.class));
+		verify(scraper, never()).fetchProducts(anyString());
 	}
 
 	@Test
@@ -248,5 +239,44 @@ public class WebScraperServiceTest {
 		serviceWith(stubbedScrapeTargets()).checkAndScrapeOnStartup();
 
 		verify(scraper, never()).setupCookies();
+	}
+
+	@Test
+	void eachLinkIsFetchedThroughTheScraperWithDefaultPageLimit() {
+		givenScraperReturns(info("Milk", "2L", "4.99", "ID-1"));
+
+		serviceWith(stubbedScrapeTargets()).scheduledScrape();
+
+		verify(scraper).fetchProducts("https://www.someteststore.com/shop/category/weekly-deals");
+		verify(scraper).setMaxPages(1); // no max_pages in the config
+		verify(scraper).setRequestDelay(0, 0);
+	}
+
+	@Test
+	void maxPagesFromConfigIsPassedToScraper() {
+		givenScraperReturns(info("Milk", "2L", "4.99", "ID-1"));
+		String json = """
+				[
+					{
+						"supermarket": "Test store",
+						"max_pages": 3,
+						"links": ["9-BDB6545B"],
+						"branches": [
+							{
+								"store_name": "Patternisation",
+								"address": "123 Example Road, Example, World 0123",
+								"region_cookie": "9529"
+							}
+						]
+					}
+				]
+				""";
+
+		serviceWith(new ByteArrayResource(json.getBytes(StandardCharsets.UTF_8))).scheduledScrape();
+
+		verify(scraper).setMaxPages(3);
+		verify(scraper, never()).setMaxPages(1);
+		verify(scraper).fetchProducts("9-BDB6545B");
+		assertEquals(1, productRepository.count());
 	}
 }

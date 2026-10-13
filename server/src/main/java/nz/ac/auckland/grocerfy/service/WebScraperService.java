@@ -2,16 +2,11 @@ package nz.ac.auckland.grocerfy.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -34,7 +29,7 @@ import nz.ac.auckland.grocerfy.model.StorePrice;
 import nz.ac.auckland.grocerfy.scraper.NewWorldScraper;
 import nz.ac.auckland.grocerfy.scraper.PaknsaveScraper;
 import nz.ac.auckland.grocerfy.scraper.SupermarketScraper;
-import nz.ac.auckland.grocerfy.util.HttpUtils;
+import nz.ac.auckland.grocerfy.scraper.WoolworthsScraper;
 
 @Service
 public class WebScraperService {
@@ -46,7 +41,8 @@ public class WebScraperService {
 
     private static final Map<String, SupermarketScraper> DEFAULT_SCRAPERS = Map.of(
         "Pak'nSave", new PaknsaveScraper(),
-        "New World", new NewWorldScraper()
+        "New World", new NewWorldScraper(),
+        "Woolworths", new WoolworthsScraper()
     );
 
     private final Map<String, SupermarketScraper> scrapers;
@@ -121,6 +117,13 @@ public class WebScraperService {
             // iterate over reach supermarket brand (e.g. paknsave, new world, etc.)
             for (ScraperConfig scraperData : mapper.readValue(inputStream, new TypeReference<List<ScraperConfig>>(){})) {
                 currentScraper = scrapers.get(scraperData.supermarket());
+                if (currentScraper == null) {
+                    System.err.println("No scraper registered for " + scraperData.supermarket() + ", skipping...");
+                    continue;
+                }
+                // paginated scrapers (e.g. Woolworths) read max_pages and pause between their own requests
+                currentScraper.setMaxPages(scraperData.maxPages() == null ? 1 : scraperData.maxPages());
+                currentScraper.setRequestDelay(requestDelayMin, requestDelayMax);
                 currentScraper.setupCookies();
 
                 for (Map<String, String> storeInfo : scraperData.branches()) {
@@ -168,21 +171,8 @@ public class WebScraperService {
         for (String link : links) {
             randomRequestDelay(); // apply random pause for no rate limiting
 
-            HttpRequest productLink = HttpRequest.newBuilder()
-                .uri(URI.create(link))
-                .headers(HttpUtils.getGenericHeaders())
-                .headers(HttpUtils.getGetHeaders())
-                .GET()
-                .build();
-
-            HttpResponse<String> response = currentScraper.sendRequestWithAuth(
-                productLink, 
-                HttpResponse.BodyHandlers.ofString()
-            );
-
-            // reads html dom and extracts all products into DTO
-            Document doc = Jsoup.parse(response.body());
-            List<ProductInfo> productData = currentScraper.extractProducts(doc);
+            // the scraper fetches the link (one html page, or several api pages) and extracts all products into DTOs
+            List<ProductInfo> productData = currentScraper.fetchProducts(link);
 
             // check each product exists (add to db if doesn't), and map it to store and price value
             for (ProductInfo productInfo : productData) {
