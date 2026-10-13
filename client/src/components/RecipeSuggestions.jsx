@@ -39,7 +39,7 @@ function RecipeSuggestions({ cartLines, dietaryTags }) {
   return (
     <section className="panel">
       <div className="section-heading">
-        <h2>Recipe ideas</h2>
+        <h2>Recipe idea</h2>
         <button
           className="primary-button"
           onClick={handleSuggest}
