@@ -36,7 +36,7 @@ export function useProductCatalogue(dietaryTags, allergenTags, onSuccess, onErro
         return () => {
             active = false
         }
-    }, [dietaryTags])
+    }, [dietaryTags, allergenTags])
 
     return { products, loading }
     }
