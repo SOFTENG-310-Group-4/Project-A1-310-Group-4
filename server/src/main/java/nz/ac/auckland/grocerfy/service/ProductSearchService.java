@@ -65,6 +65,7 @@ public class ProductSearchService {
 
 	private ProductSearchResponse toResponse(Product product) {
 		return new ProductSearchResponse(
+				product.getId(),
 				product.getProductName(),
 				product.getSize(),
 				product.getAllergens(),

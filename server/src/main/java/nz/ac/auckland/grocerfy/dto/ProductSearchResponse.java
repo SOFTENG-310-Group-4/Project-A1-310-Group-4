@@ -11,6 +11,7 @@ import nz.ac.auckland.grocerfy.model.Dietary;
  * why a product matched the selected filters.
  */
 public record ProductSearchResponse(
+		Long productId,
 		String productName,
 		String packageSize,
 		Set<Allergen> allergens,

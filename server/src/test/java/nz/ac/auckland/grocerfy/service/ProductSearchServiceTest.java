@@ -2,7 +2,6 @@ package nz.ac.auckland.grocerfy.service;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ class ProductSearchServiceTest {
 	private ProductSearchResponse nameToResponse(String name) {
 		Product product = availableProducts.get(name);
 		return new ProductSearchResponse(
+			product.getId(),
 			product.getProductName(),
 			product.getSize(),
 			product.getAllergens(),
