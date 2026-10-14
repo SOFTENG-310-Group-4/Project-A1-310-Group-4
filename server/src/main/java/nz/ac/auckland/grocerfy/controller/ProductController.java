@@ -1,7 +1,7 @@
 package nz.ac.auckland.grocerfy.controller;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import nz.ac.auckland.grocerfy.dto.ProductSearchResponse;
+import nz.ac.auckland.grocerfy.model.Allergen;
+import nz.ac.auckland.grocerfy.model.Dietary;
 import nz.ac.auckland.grocerfy.service.ProductSearchService;
 
 /**
@@ -31,7 +33,9 @@ public class ProductController {
 
 	@GetMapping
 	public List<ProductSearchResponse> search(
-			@RequestParam(required = false) String query) {
-		return productSearchService.search(query, Collections.emptySet(), Collections.emptySet()); // dummied diet/allergen, TODO fix later
+			@RequestParam(required = false) String query,
+			@RequestParam(name = "dietary", required = false) Set<Dietary> dietary,
+			@RequestParam(name = "allergens", required = false) Set<Allergen> allergens) {
+		return productSearchService.search(query, dietary, allergens);
 	}
 }

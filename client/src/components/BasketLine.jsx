@@ -27,7 +27,7 @@ function BasketLine({ line, index, products, cartLines, onChange, onRemove }) {
                                 value={product.productId}
                                 disabled={isSelectedElsewhere}
                             >
-                                {product.displayName}
+                                {product.productName} ({product.packageSize})
                                 {isSelectedElsewhere ? ' (Already added)' : ''}
                             </option>
                         )

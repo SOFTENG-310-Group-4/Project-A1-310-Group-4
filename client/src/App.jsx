@@ -1,3 +1,4 @@
+
 import { useMemo, useRef, useState } from 'react'
 import DietaryFilterBar from './components/DietaryFilterBar'
 import { compareBasket } from './api/basketApi'
@@ -13,6 +14,7 @@ import ResultsPanel from './components/ResultsPanel'
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
   const [loyaltyPrograms, setLoyaltyPrograms] = useState([])
+  const [allergenTags, setAllergenTags] = useState([])
   const [comparison, setComparison] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +49,8 @@ function App() {
   }
 
   const { products, loading: catalogueLoading } = useProductCatalogue(
-    dietaryTags, 
+    dietaryTags,
+    allergenTags,
     handleProductsLoaded, 
     setError,
   )
@@ -70,8 +73,17 @@ function App() {
     )
   }
 
-  function clearDietaryTags() {
+  function clearAllTags() {
     setDietaryTags([])
+    setAllergenTags([])
+  }
+
+  function toggleAllergenTag(tag) {
+    setAllergenTags((currentTags) =>
+      currentTags.includes(tag)
+        ? currentTags.filter((currentTag) => currentTag !== tag)
+        : [...currentTags, tag],
+    )
   }
 
   /**
@@ -132,9 +144,11 @@ function App() {
       <section className="panel grid filtered-grid">
         <div className="catalog-column">
           <DietaryFilterBar
-            selectedTags={dietaryTags}
-            onToggleTag={toggleDietaryTag}
-            onClear={clearDietaryTags}
+            selectedDietary={dietaryTags}
+            onToggleDietary={toggleDietaryTag}
+            selectedAllergens={allergenTags}
+            onToggleAllergen={toggleAllergenTag}
+            onClear={clearAllTags}
             matchCount={products.length}
           />
           <CatalogueList products={products} catalogueLoading={catalogueLoading} />

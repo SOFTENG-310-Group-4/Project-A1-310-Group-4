@@ -13,8 +13,8 @@ import BasketLine from '../components/BasketLine'
  * useCartLines.test.jsx.
  */
 const PRODUCTS = [
-  { productId: 1, displayName: 'NZ Gala Apple' },
-  { productId: 2, displayName: 'Anchor Trim Milk' },
+  { productId: 1, productName: 'NZ Gala Apple', packageSize: '1kg' },
+  { productId: 2, productName: 'Anchor Trim Milk', packageSize: '2l' },
 ]
 
 function renderLine(overrides = {}) {
@@ -60,8 +60,8 @@ describe('BasketLine', () => {
       ],
     })
 
-    expect(screen.getByRole('option', { name: /Anchor Trim Milk \(Already added\)/ })).toBeDisabled()
-    expect(screen.getByRole('option', { name: 'NZ Gala Apple' })).toBeEnabled()
+    expect(screen.getByRole('option', { name: /Anchor Trim Milk \(2l\) \(Already added\)/ })).toBeDisabled()
+    expect(screen.getByRole('option', { name: /NZ Gala Apple \(1kg\)/ })).toBeEnabled()
   })
 
   it('reports the new product id when the selection changes', async () => {
