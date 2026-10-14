@@ -5,7 +5,7 @@ import { fetchProducts } from '../api/productsApi'
  * Whenever the dietary tags change, fetch the product catalogue from the backend
  * since the filtering is done on the server side.
  */
-export function useProductCatalogue(dietaryTags, onSuccess, onError) {
+export function useProductCatalogue(dietaryTags, allergenTags, onSuccess, onError) {
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -15,7 +15,7 @@ export function useProductCatalogue(dietaryTags, onSuccess, onError) {
         async function loadProducts() {
             setLoading(true)
             try {
-                const data = await fetchProducts(dietaryTags)
+                const data = await fetchProducts(dietaryTags, allergenTags)
                 if (!active) {
                     return
                 }
@@ -36,7 +36,7 @@ export function useProductCatalogue(dietaryTags, onSuccess, onError) {
         return () => {
             active = false
         }
-    }, [dietaryTags])
+    }, [dietaryTags, allergenTags])
 
     return { products, loading }
     }

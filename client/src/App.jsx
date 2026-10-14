@@ -12,10 +12,11 @@ import ResultsPanel from "./components/ResultsPanel";
 import RecipeSuggestions from "./components/RecipeSuggestions";
 
 function App() {
-  const [dietaryTags, setDietaryTags] = useState([]);
-  const [comparison, setComparison] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [dietaryTags, setDietaryTags] = useState([])
+  const [allergenTags, setAllergenTags] = useState([])
+  const [comparison, setComparison] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const { cartLines, setCartLines, updateLine, addLine, removeLine } =
     useCartLines();
@@ -52,7 +53,8 @@ function App() {
 
   const { products, loading: catalogueLoading } = useProductCatalogue(
     dietaryTags,
-    handleProductsLoaded,
+    allergenTags,
+    handleProductsLoaded, 
     setError,
   );
 
@@ -77,8 +79,17 @@ function App() {
     );
   }
 
-  function clearDietaryTags() {
-    setDietaryTags([]);
+  function clearAllTags() {
+    setDietaryTags([])
+    setAllergenTags([])
+  }
+
+  function toggleAllergenTag(tag) {
+    setAllergenTags((currentTags) =>
+      currentTags.includes(tag)
+        ? currentTags.filter((currentTag) => currentTag !== tag)
+        : [...currentTags, tag],
+    )
   }
 
   async function handleSubmit(event) {
@@ -118,9 +129,11 @@ function App() {
       <section className="panel grid filtered-grid">
         <div className="catalog-column">
           <DietaryFilterBar
-            selectedTags={dietaryTags}
-            onToggleTag={toggleDietaryTag}
-            onClear={clearDietaryTags}
+            selectedDietary={dietaryTags}
+            onToggleDietary={toggleDietaryTag}
+            selectedAllergens={allergenTags}
+            onToggleAllergen={toggleAllergenTag}
+            onClear={clearAllTags}
             matchCount={products.length}
           />
           <CatalogueList
