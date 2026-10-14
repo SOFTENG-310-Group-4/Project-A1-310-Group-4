@@ -12,10 +12,10 @@ import ResultsPanel from "./components/ResultsPanel";
 import RecipeSuggestions from "./components/RecipeSuggestions";
 
 function App() {
-  const [dietaryTags, setDietaryTags] = useState([])
-  const [allergenTags, setAllergenTags] = useState([])
-  const [comparison, setComparison] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [dietaryTags, setDietaryTags] = useState([]);
+  const [allergenTags, setAllergenTags] = useState([]);
+  const [comparison, setComparison] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('')
 
   const { cartLines, setCartLines, updateLine, addLine, removeLine } =

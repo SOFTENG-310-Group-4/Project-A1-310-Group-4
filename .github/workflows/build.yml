@@ -36,8 +36,23 @@ jobs:
       - name: 'Build'
         working-directory: ./server
         run: ./mvnw -B install   # must be install, not verify — the action needs the .m2 artifacts + target dir
+     
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Frontend tests with coverage
+        working-directory: ./client
+        run: |
+          npm ci
+          npm run coverage
+      - name: Prefix lcov paths for Sonar
+        run: sed -i 's#^SF:src/#SF:client/src/#' client/coverage/lcov.info
+     
       - name: 'Prepare Sonar artifact'
-        uses: $/.github/actions
+        uses: ./.github/actions
         with:
           distribution: "zulu"
           java-version: '17'
