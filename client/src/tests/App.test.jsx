@@ -12,10 +12,10 @@ import App from '../App'
  * a product is returned only if it carries every requested tag.
  */
 const CATALOGUE = [
-  { productId: 1, productName: 'Apple', displayName: 'NZ Gala Apple', glutenFree: true, lactoseFree: true, vegetarian: true, vegan: true },
-  { productId: 2, productName: 'Trim Milk', displayName: 'Anchor Trim Milk', glutenFree: true, lactoseFree: false, vegetarian: true, vegan: false },
-  { productId: 3, productName: 'White Bread', displayName: 'Tip Top White Bread', glutenFree: false, lactoseFree: true, vegetarian: true, vegan: true },
-  { productId: 4, productName: 'Chicken Breast', displayName: 'Tegel Chicken Breast', glutenFree: true, lactoseFree: true, vegetarian: false, vegan: false },
+  { productId: 1, productName: 'Apple', packageSize: 'kg', dietInfo: ["VEGAN", "VEGETARIAN"], allergens: [] },
+  { productId: 2, productName: 'Trim Milk', packageSize: '2l', dietInfo: [], allergens: ["DAIRY"] },
+  { productId: 3, productName: 'White Bread', packageSize: 'ea', dietInfo: ["VEGAN", "VEGETARIAN"], allergens: ["GLUTEN", "DAIRY"] },
+  { productId: 4, productName: 'Chicken Breast', packageSize: 'kg', dietInfo: [], allergens: [] },
 ]
 
 const TAG_FIELDS = {
@@ -29,8 +29,14 @@ const TAG_FIELDS = {
 let requestedUrls = []
 
 function filterCatalogue(url) {
-  const tags = new URL(url, 'http://localhost').searchParams.getAll('dietary')
-  return CATALOGUE.filter((product) => tags.every((tag) => product[TAG_FIELDS[tag]]))
+  const params = new URL(url, 'http://localhost').searchParams
+  const dietary = params.getAll('dietary')
+  const allergens = params.getAll('allergens')
+ 
+  return CATALOGUE.filter((product) =>
+    dietary.every((tag) => product.dietInfo.includes(tag)) &&
+    allergens.every((allergen) => !product.allergens.includes(allergen)),
+  )
 }
 
 beforeEach(() => {
@@ -76,7 +82,7 @@ describe('dietary filtering', () => {
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
 
-    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=vegan'))
+    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=VEGAN'))
   })
 
   it('removes products that do not carry the selected tag', async () => {
@@ -95,7 +101,7 @@ describe('dietary filtering', () => {
     const user = await renderAndLoad()
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
-    await user.click(screen.getByRole('checkbox', { name: 'Gluten free' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Gluten' }))
 
     // White Bread is vegan but not gluten free, so an OR would wrongly keep it.
     await waitFor(() => {
@@ -120,13 +126,13 @@ describe('dietary filtering', () => {
     const user = await renderAndLoad()
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
-    await user.click(screen.getByRole('checkbox', { name: 'Gluten free' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Vegetarian' }))
     await user.click(screen.getByRole('button', { name: /clear all/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('checkbox', { name: 'Vegan' })).not.toBeChecked()
     })
-    expect(screen.getByRole('checkbox', { name: 'Gluten free' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Vegetarian' })).not.toBeChecked()
     expect(within(catalogue()).getAllByRole('listitem')).toHaveLength(4)
   })
 
@@ -151,8 +157,8 @@ describe('basket interaction with the filter', () => {
     await waitFor(() => {
       const options = within(screen.getByRole('combobox')).getAllByRole('option')
       const labels = options.map((option) => option.textContent)
-      expect(labels).not.toContain('Anchor Trim Milk')
-      expect(labels).toContain('NZ Gala Apple')
+      expect(labels).not.toContain('Trim Milk (2l)')
+      expect(labels).toContain('Apple (kg)')
     })
   })
 
@@ -178,7 +184,7 @@ describe('basket interaction with the filter', () => {
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
 
-    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=vegan'))
+    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=VEGAN'))
     expect(screen.getByRole('combobox')).toHaveValue('1')
   })
 
@@ -189,7 +195,7 @@ describe('basket interaction with the filter', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
 
     // White Bread is vegan, so the pre fill guard must not overwrite the choice.
-    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=vegan'))
+    await waitFor(() => expect(requestedUrls).toContain('/api/product?dietary=VEGAN'))
     expect(screen.getByRole('combobox')).toHaveValue('3')
   })
 
