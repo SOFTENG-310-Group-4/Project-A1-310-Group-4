@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -90,6 +91,11 @@ public class WoolworthsScraper extends SupermarketScraper {
         + " variants { unitOfMeasure variantPrice { sellingPrice sellingUnit } }"
         + " tags { type userSegmentId decisionInputs } } } } } }"; // tags carry Everyday Rewards member prices
 
+    // ProductSearch response fields; only ProductSummary results are real products
+    private static final String RESULTS = "results";
+    private static final String TYPENAME = "__typename";
+    private static final String PRODUCT_SUMMARY = "ProductSummary";
+
     /** Product tag holding the Everyday Rewards member price, e.g. decisionInputs.promotionalPrice = 529 (cents). */
     private static final String MEMBER_PRICE_TAG = "MemberPrice";
 
@@ -102,15 +108,16 @@ public class WoolworthsScraper extends SupermarketScraper {
     }
 
     /**
-     * A pack size inside a product name, e.g. "750g", "1.2kg", "2L", "12 x 250mL", "12x250mL".
-     * The size is only ever part of the name on Woolworths (there is no size field in search results).
+     * A quantity inside a product name: a number and the word after it, optionally after a multipack count,
+     * e.g. "750g", "1.2kg", "2L", "12 x 250mL", "12x250mL", "12 Pack". Woolworths only states sizes in the name
+     * (there is no size field in search results). The word is checked against WEIGHT_UNITS / PACK_UNITS in
+     * code rather than in the regex, and the quantifiers are possessive, so matching never backtracks.
      */
-    private static final Pattern SIZE_PATTERN = Pattern.compile(
-        "(?<![\\w.])(?:(\\d+)\\s*x\\s*)?(\\d+(?:\\.\\d+)?)\\s*(kg|g|ml|ltr|litres?|l)(?![a-z])",
-        Pattern.CASE_INSENSITIVE);
-    /** A pack count, e.g. "12 Pack", "30pk"; only used when the name has no weight or volume. */
-    private static final Pattern PACK_PATTERN = Pattern.compile("(?<![\\w.])(\\d+)\\s*(?:pk|pack)(?![a-z])",
-        Pattern.CASE_INSENSITIVE);
+    private static final Pattern QUANTITY_PATTERN = Pattern.compile(
+        "\\b(?:(\\d++)\\s*+x\\s*+)?(\\d++(?:\\.\\d++)?)\\s*+(\\p{Alpha}++)", Pattern.CASE_INSENSITIVE);
+    private static final Set<String> WEIGHT_UNITS = Set.of("kg", "g", "ml", "l", "ltr", "litre", "litres");
+    /** Pack counts ("12 Pack", "30pk") are only used when the name has no weight or volume. */
+    private static final Set<String> PACK_UNITS = Set.of("pk", "pack");
     private static final int MAX_SIZE_LENGTH = 20; // products.size column length
 
     private static final String[] GRAPHQL_HEADERS = {
@@ -436,8 +443,8 @@ public class WoolworthsScraper extends SupermarketScraper {
      * Pins the storeKey on the first page after a store change; afterwards every product must match it.
      */
     private boolean storeKeyMatches(JsonNode productsNode) {
-        for (JsonNode result : productsNode.path("results")) {
-            if (!"ProductSummary".equals(result.path("__typename").asText())) {
+        for (JsonNode result : productsNode.path(RESULTS)) {
+            if (!PRODUCT_SUMMARY.equals(result.path(TYPENAME).asText())) {
                 continue;
             }
             String storeKey = result.path("storeKey").asText(null);
@@ -478,9 +485,9 @@ public class WoolworthsScraper extends SupermarketScraper {
 
     private List<ProductInfo> extractProducts(JsonNode productsNode) {
         List<ProductInfo> products = new ArrayList<>();
-        for (JsonNode result : productsNode.path("results")) {
+        for (JsonNode result : productsNode.path(RESULTS)) {
             // SponsoredProduct = paid ads (often from other categories), ContentInGridResultItem = recipe banners
-            if (!"ProductSummary".equals(result.path("__typename").asText())) {
+            if (!PRODUCT_SUMMARY.equals(result.path(TYPENAME).asText())) {
                 continue;
             }
             String name = result.path("productName").asText("").trim();
@@ -550,21 +557,21 @@ public class WoolworthsScraper extends SupermarketScraper {
         }
 
         String size = null;
-        Matcher matcher = SIZE_PATTERN.matcher(productName);
+        String packSize = null;
+        Matcher matcher = QUANTITY_PATTERN.matcher(productName);
         while (matcher.find()) { // keep the last match: the pack size is usually at the end of the name
-            String unit = matcher.group(3).toLowerCase();
-            if (unit.startsWith("lit") || unit.equals("ltr")) {
-                unit = "l";
+            String word = matcher.group(3).toLowerCase(Locale.ROOT);
+            if (WEIGHT_UNITS.contains(word)) {
+                String unit = word.startsWith("l") ? "l" : word; // l, ltr, litre(s) -> l
+                String amount = matcher.group(2) + unit;
+                size = matcher.group(1) == null ? amount : matcher.group(1) + " x " + amount;
+            } else if (PACK_UNITS.contains(word)) {
+                packSize = matcher.group(2) + "pk";
             }
-            String amount = matcher.group(2) + unit;
-            size = matcher.group(1) == null ? amount : matcher.group(1) + " x " + amount;
         }
 
         if (size == null) {
-            Matcher packMatcher = PACK_PATTERN.matcher(productName);
-            while (packMatcher.find()) {
-                size = packMatcher.group(1) + "pk";
-            }
+            size = packSize;
         }
         if (size == null) {
             return "ea";
@@ -597,9 +604,9 @@ public class WoolworthsScraper extends SupermarketScraper {
                 if (productsNode == null) {
                     break;
                 }
-                for (JsonNode result : productsNode.path("results")) {
+                for (JsonNode result : productsNode.path(RESULTS)) {
                     String sku = result.path("sku").asText("");
-                    if ("ProductSummary".equals(result.path("__typename").asText()) && remaining.remove(sku)) {
+                    if (PRODUCT_SUMMARY.equals(result.path(TYPENAME).asText()) && remaining.remove(sku)) {
                         dietaryBySku.computeIfAbsent(sku, key -> EnumSet.noneOf(Dietary.class)).add(facet.getValue());
                     }
                 }

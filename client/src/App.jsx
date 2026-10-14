@@ -133,7 +133,7 @@ function App() {
 
     setLoyaltyPrograms(nextPrograms)
     if (comparison && !loading) {
-      runComparison(nextPrograms)
+      void runComparison(nextPrograms)
     }
   }
 
