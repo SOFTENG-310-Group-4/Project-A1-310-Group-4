@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import DietaryFilterBar from '../components/DietaryFilterBar'
-import { DIETARY_TAGS } from '../constants/dietaryTags'
+import { DIETARY_TAGS, ALLERGEN_TAGS } from '../constants/dietaryTags'
 
 /**
  * Unit tests for the dietary filter sidebar (issue #32).
@@ -14,8 +14,10 @@ import { DIETARY_TAGS } from '../constants/dietaryTags'
  */
 function renderFilter(overrides = {}) {
   const props = {
-    selectedTags: [],
-    onToggleTag: vi.fn(),
+    selectedDietary: [],
+    onToggleDietary: vi.fn(),
+    selectedAllergens: [],
+    onToggleAllergen: vi.fn(),
     onClear: vi.fn(),
     matchCount: 10,
     ...overrides,
@@ -26,42 +28,64 @@ function renderFilter(overrides = {}) {
 }
 
 describe('DietaryFilterBar', () => {
-  it('renders a checkbox for every supported dietary tag', () => {
+  it('renders a checkbox for every supported dietary and allergen tag', () => {
     renderFilter()
 
-    expect(screen.getAllByRole('checkbox')).toHaveLength(DIETARY_TAGS.length)
-    expect(screen.getByRole('checkbox', { name: 'Gluten free' })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: 'Lactose free' })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: 'Vegetarian' })).toBeInTheDocument()
+    expect(screen.getAllByRole('checkbox')).toHaveLength(DIETARY_TAGS.length + ALLERGEN_TAGS.length)
     expect(screen.getByRole('checkbox', { name: 'Vegan' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Vegetarian' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Non-GMO' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Organic' })).toBeInTheDocument()
+
+    expect(screen.getByRole('checkbox', { name: 'Gluten' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Wheat' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Dairy' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Egg' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Fish' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Shellfish' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Soy' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Tree Nuts' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Sesame' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Peanut' })).toBeInTheDocument()
   })
 
   it('checks only the tags that are currently selected', () => {
-    renderFilter({ selectedTags: ['vegan', 'gluten_free'] })
+    renderFilter({ selectedDietary: ['VEGAN'], selectedAllergens: ['GLUTEN'] })
 
     expect(screen.getByRole('checkbox', { name: 'Vegan' })).toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Gluten free' })).toBeChecked()
     expect(screen.getByRole('checkbox', { name: 'Vegetarian' })).not.toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Lactose free' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Non-GMO' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Organic' })).not.toBeChecked()
+
+    expect(screen.getByRole('checkbox', { name: 'Gluten' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Wheat' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Dairy' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Egg' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Fish' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Shellfish' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Soy' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Tree Nuts' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Sesame' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Peanut' })).not.toBeChecked()
   })
 
-  it('reports the tag value, not the label, when a chip is clicked', async () => {
+  it('reports the dietary value, not the label, when a chip is clicked', async () => {
     const user = userEvent.setup()
-    const { onToggleTag } = renderFilter()
+    const { onToggleDietary } = renderFilter()
 
-    await user.click(screen.getByRole('checkbox', { name: 'Gluten free' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Vegetarian' }))
 
     // The API rejects unknown tag names with a 400, so the exact value matters.
-    expect(onToggleTag).toHaveBeenCalledExactlyOnceWith('gluten_free')
+    expect(onToggleDietary).toHaveBeenCalledExactlyOnceWith('VEGETARIAN')
   })
 
   it('reports the same tag when an already selected chip is clicked again', async () => {
     const user = userEvent.setup()
-    const { onToggleTag } = renderFilter({ selectedTags: ['vegan'] })
+    const { onToggleDietary } = renderFilter({ selectedDietary: ['VEGAN'] })
 
     await user.click(screen.getByRole('checkbox', { name: 'Vegan' }))
 
-    expect(onToggleTag).toHaveBeenCalledExactlyOnceWith('vegan')
+    expect(onToggleDietary).toHaveBeenCalledExactlyOnceWith('VEGAN')
   })
 
   it('hides the clear button until at least one tag is selected', () => {
@@ -72,7 +96,7 @@ describe('DietaryFilterBar', () => {
 
   it('shows the clear button when tags are selected and calls back on click', async () => {
     const user = userEvent.setup()
-    const { onClear } = renderFilter({ selectedTags: ['vegan'] })
+    const { onClear } = renderFilter({ selectedDietary: ['VEGAN'] })
 
     await user.click(screen.getByRole('button', { name: /clear all/i }))
 
@@ -85,15 +109,29 @@ describe('DietaryFilterBar', () => {
     expect(screen.getByText('Showing the full catalogue')).toBeInTheDocument()
   })
 
-  it('summarises how many products match the selected tags', () => {
-    renderFilter({ selectedTags: ['vegan'], matchCount: 4 })
+  it('summarises how many products match the dietary tags', () => {
+    renderFilter({ selectedDietary: ['VEGAN'], matchCount: 4 })
 
-    expect(screen.getByText('4 products match every selected tag')).toBeInTheDocument()
+    expect(screen.getByText('4 products match every selected dietary tag')).toBeInTheDocument()
+  })
+
+  it('summarises how many products match the allergen exclusions', () => {
+    renderFilter({ selectedAllergens: ['GLUTEN'], matchCount: 4 })
+ 
+    expect(screen.getByText('4 products match your allergen exclusions')).toBeInTheDocument()
+  })
+ 
+  it('summarises dietary tags and allergen exclusions together', () => {
+    renderFilter({ selectedDietary: ['VEGAN'], selectedAllergens: ['GLUTEN'], matchCount: 4 })
+ 
+    expect(
+      screen.getByText('4 products match every selected dietary tag and your allergen exclusions'),
+    ).toBeInTheDocument()
   })
 
   it('uses singular wording for a single match', () => {
-    renderFilter({ selectedTags: ['vegan', 'gluten_free'], matchCount: 1 })
+    renderFilter({ selectedDietary: ['VEGAN', 'NONGMO'], matchCount: 1 })
 
-    expect(screen.getByText('1 product matches every selected tag')).toBeInTheDocument()
+    expect(screen.getByText('1 product matches every selected dietary tag')).toBeInTheDocument()
   })
 })

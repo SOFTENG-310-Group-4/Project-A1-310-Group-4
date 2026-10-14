@@ -27,9 +27,9 @@ function ChipGroup({ legend, options, selected, onToggle }) {
 }
 
 function DietaryFilterBar({
-      selectedDietary,
+      selectedDietary=[],
       onToggleDietary,
-      selectedAllergens,
+      selectedAllergens=[],
       onToggleAllergen,
       onClear,
       matchCount }) {
