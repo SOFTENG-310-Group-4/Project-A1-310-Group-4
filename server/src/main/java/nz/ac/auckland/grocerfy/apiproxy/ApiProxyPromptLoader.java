@@ -20,15 +20,19 @@ public class ApiProxyPromptLoader {
     if (resourcePath == null || resourcePath.isBlank()) {
       throw new IllegalArgumentException("resourcePath must not be blank");
     }
+    InputStream in = ApiProxyPromptLoader.class.getResourceAsStream(resourcePath);
+    return readStream(in, resourcePath);
+  }
 
-    try (InputStream in = ApiProxyPromptLoader.class.getResourceAsStream(resourcePath)) {
-      if (in == null) {
-        throw new ApiProxyException(
-            "Prompt template not found on classpath: "
-                + resourcePath
-                + " (expected under src/main/resources)");
-      }
-      return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+  static String readStream(InputStream in, String resourcePath) {
+    if (in == null) {
+      throw new ApiProxyException(
+          "Prompt template not found on classpath: "
+              + resourcePath
+              + " (expected under src/main/resources)");
+    }
+    try (InputStream stream = in) {
+      return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
     } catch (IOException exception) {
       throw new ApiProxyException("Failed to read prompt template: " + resourcePath, exception);
     }

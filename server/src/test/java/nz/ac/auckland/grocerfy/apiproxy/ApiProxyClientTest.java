@@ -126,4 +126,19 @@ class ApiProxyClientTest {
         .isInstanceOf(ApiProxyException.class)
         .hasMessageContaining("Network error calling API proxy");
   }
+
+  @Test
+  void wrapsInterruptedExceptionWhenTheCallingThreadIsInterrupted() {
+    ApiProxyRequest request = new ApiProxyRequest("Suggest a recipe.");
+
+    Thread.currentThread().interrupt();
+
+    try {
+      assertThatThrownBy(() -> client.send(request))
+          .isInstanceOf(ApiProxyException.class)
+          .hasMessageContaining("Request interrupted");
+    } finally {
+      Thread.interrupted();
+    }
+  }
 }

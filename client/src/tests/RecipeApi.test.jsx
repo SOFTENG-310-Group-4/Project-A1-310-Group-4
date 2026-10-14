@@ -69,4 +69,33 @@ describe('suggestRecipes', () => {
 
     await expect(suggestRecipes({ items: [] })).rejects.toThrow('Network down')
   })
+
+  it('extracts the error field from a JSON error body', async () => {
+  fetchMock.mockResolvedValue({
+    ok: false,
+    text: async () => '{"error":"Basket must contain at least one item."}',
+  })
+
+  await expect(suggestRecipes({ items: [] })).rejects.toThrow(
+    'Basket must contain at least one item.',
+  )
+})
+
+it('extracts the message field when the JSON body uses that key', async () => {
+  fetchMock.mockResolvedValue({
+    ok: false,
+    text: async () => '{"message":"Model is unavailable."}',
+  })
+
+  await expect(suggestRecipes({ items: [] })).rejects.toThrow('Model is unavailable.')
+})
+
+it('falls back to a generic message when the JSON body has neither error nor message', async () => {
+  fetchMock.mockResolvedValue({
+    ok: false,
+    text: async () => '{"status":500,"path":"/api/recipes/suggest"}',
+  })
+
+  await expect(suggestRecipes({ items: [] })).rejects.toThrow('Unable to suggest recipes.')
+})
 })

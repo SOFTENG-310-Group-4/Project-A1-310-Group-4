@@ -3,6 +3,8 @@ package nz.ac.auckland.grocerfy.apiproxy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -39,5 +41,22 @@ class ApiProxyPromptLoaderTest {
     assertThatThrownBy(() -> ApiProxyPromptLoader.load("  "))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("must not be blank");
+  }
+
+  @Test
+  void wrapsIoExceptionWhenTheStreamCannotBeRead() {
+    InputStream broken =
+        new InputStream() {
+          @Override
+          public int read() throws IOException {
+            throw new IOException("disk failure");
+          }
+        };
+
+    assertThatThrownBy(() -> ApiProxyPromptLoader.readStream(broken, "/prompts/whatever.txt"))
+        .isInstanceOf(ApiProxyException.class)
+        .hasMessageContaining("Failed to read prompt template")
+        .hasRootCauseInstanceOf(IOException.class)
+        .hasRootCauseMessage("disk failure");
   }
 }
