@@ -21,12 +21,15 @@ import nz.ac.auckland.grocerfy.dto.BasketComparisonRequest;
 import nz.ac.auckland.grocerfy.dto.BasketComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.BasketItemRequest;
 import nz.ac.auckland.grocerfy.dto.Coordinates;
+import nz.ac.auckland.grocerfy.dto.MissingItemResponse;
+import nz.ac.auckland.grocerfy.dto.MissingItemResponse.MissingReason;
 import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.StoreLineItemResponse;
 import nz.ac.auckland.grocerfy.model.Allergen;
 import nz.ac.auckland.grocerfy.model.Dietary;
 import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.model.Product;
+import nz.ac.auckland.grocerfy.model.StockStatus;
 import nz.ac.auckland.grocerfy.model.Store;
 import nz.ac.auckland.grocerfy.model.StorePrice;
 import nz.ac.auckland.grocerfy.repository.ProductRepository;
@@ -212,4 +215,87 @@ class BasketComparisonServiceTest {
       assertThat(ww.latitude()).isNull();
       assertThat(ww.longitude()).isNull();
   }
+
+	// ------------------------------------------------------------------ Per-store stock status (#73)
+
+	private static StorePrice stockedPrice(Product product, Store store, String price, Integer stockQuantity) {
+		return new StorePrice(product, store, new BigDecimal(price), null, null, stockQuantity);
+	}
+
+	private static MissingItemResponse onlyMissingItem(BasketComparisonResponse response, String storeName) {
+		List<MissingItemResponse> missingItems = storeNamed(response, storeName).missingItems();
+		assertThat(missingItems).hasSize(1);
+		return missingItems.get(0);
+	}
+
+	@Test
+	void itemsWithoutEnoughStockAreTreatedAsMissing() {
+		Product apple = withId(new Product("Apple", "1kg", new HashSet<>(), new HashSet<>()), 1L);
+		Product bread = withId(new Product("White Bread", "600g", new HashSet<>(), new HashSet<>()), 2L);
+		Store outOfStock = withId(new Store("Pak'nSave Albany", "Albany", "1 Main St", "uuid-a"), 10L);
+		Store lowStock = withId(new Store("Woolworths Albany", "Albany", "2 Main St", "9001"), 11L);
+		Store notStocked = withId(new Store("New World Albany", "Albany", "3 Main St", "uuid-b"), 12L);
+
+		when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(apple, bread));
+		when(storePriceRepository.findAllWithRelations()).thenReturn(List.of(
+				stockedPrice(apple, outOfStock, "1.50", 20),
+				stockedPrice(bread, outOfStock, "3.00", 0),
+				stockedPrice(apple, lowStock, "1.80", 20),
+				stockedPrice(bread, lowStock, "3.50", 1),
+				stockedPrice(apple, notStocked, "2.00", 20)));
+		when(storeRepository.findAll()).thenReturn(List.of(outOfStock, lowStock, notStocked));
+
+		BasketComparisonResponse response = basketComparisonService.compareBasket(new BasketComparisonRequest(List.of(
+				new BasketItemRequest(1L, 1),
+				new BasketItemRequest(2L, 2)), null));
+
+		assertThat(response.cheapestAvailableStore()).isNull();
+		assertThat(response.stores()).noneMatch(StoreComparisonResponse::available);
+
+		MissingItemResponse outOfStockBread = onlyMissingItem(response, "Pak'nSave Albany");
+		assertThat(outOfStockBread.reason()).isEqualTo(MissingReason.OUT_OF_STOCK);
+		assertThat(outOfStockBread.availableQuantity()).isZero();
+
+		MissingItemResponse lowStockBread = onlyMissingItem(response, "Woolworths Albany");
+		assertThat(lowStockBread.reason()).isEqualTo(MissingReason.INSUFFICIENT_STOCK);
+		assertThat(lowStockBread.availableQuantity()).isEqualTo(1);
+		assertThat(lowStockBread.quantity()).isEqualTo(2);
+
+		assertThat(onlyMissingItem(response, "New World Albany").reason()).isEqualTo(MissingReason.NOT_STOCKED);
+
+		// the apple is still listed as an available line with its stock status
+		assertThat(storeNamed(response, "Pak'nSave Albany").lineItems())
+				.singleElement()
+				.satisfies(line -> assertThat(line.stockStatus()).isEqualTo(StockStatus.IN_STOCK));
+	}
+
+	@Test
+	void lowStockIsAllowedWhenItStillCoversTheRequestedQuantity() {
+		Product apple = withId(new Product("Apple", "1kg", new HashSet<>(), new HashSet<>()), 1L);
+		Store store = withId(new Store("Pak'nSave Albany", "Albany", "1 Main St", "uuid-a"), 10L);
+
+		when(productRepository.findAllById(Set.of(1L))).thenReturn(List.of(apple));
+		when(storePriceRepository.findAllWithRelations()).thenReturn(List.of(stockedPrice(apple, store, "1.50", 3)));
+		when(storeRepository.findAll()).thenReturn(List.of(store));
+
+		BasketComparisonResponse response = basketComparisonService.compareBasket(
+				new BasketComparisonRequest(List.of(new BasketItemRequest(1L, 3)), null));
+
+		assertThat(response.cheapestAvailableStore()).isNotNull();
+		assertThat(response.cheapestAvailableStore().availableSubtotal()).isEqualByComparingTo("4.50");
+		assertThat(response.cheapestAvailableStore().lineItems())
+				.singleElement()
+				.satisfies(line -> assertThat(line.stockStatus()).isEqualTo(StockStatus.LOW_STOCK));
+	}
+
+	@Test
+	void unknownStockIsTreatedAsAvailableWithNoStockStatus() {
+		// scraped prices carry no stock level, so a store must still be able to fulfil the basket
+		BasketComparisonResponse response = basketComparisonService.compareBasket(givenMemberPricedBasket(null));
+
+		assertThat(response.stores()).allMatch(StoreComparisonResponse::available);
+		assertThat(response.stores())
+				.flatMap(StoreComparisonResponse::lineItems)
+				.allSatisfy(line -> assertThat(line.stockStatus()).isNull());
+	}
 }

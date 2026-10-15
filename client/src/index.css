@@ -406,6 +406,27 @@ button {
 .location-control span {
     color: var(--muted);
     font-size: 0.9rem;
+
+/* Stock status badges shown next to basket lines in each store card */
+.stock-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-style: normal;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stock-low {
+    background: rgba(245, 158, 11, 0.16);
+    color: #92400e;
+}
+
+.stock-out {
+    background: rgba(220, 38, 38, 0.12);
+    color: #991b1b;
 }
 
 /* =======================================

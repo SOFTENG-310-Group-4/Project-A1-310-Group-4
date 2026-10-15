@@ -19,11 +19,13 @@ import nz.ac.auckland.grocerfy.dto.BasketComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.BasketItemRequest;
 import nz.ac.auckland.grocerfy.dto.Coordinates;
 import nz.ac.auckland.grocerfy.dto.MissingItemResponse;
+import nz.ac.auckland.grocerfy.dto.MissingItemResponse.MissingReason;
 import nz.ac.auckland.grocerfy.dto.ProductSummaryResponse;
 import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.StoreLineItemResponse;
 import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.model.Product;
+import nz.ac.auckland.grocerfy.model.StockStatus;
 import nz.ac.auckland.grocerfy.model.Store;
 import nz.ac.auckland.grocerfy.model.StorePrice;
 import nz.ac.auckland.grocerfy.repository.ProductRepository;
@@ -32,7 +34,8 @@ import nz.ac.auckland.grocerfy.repository.StorePriceRepository;
 
 /**
  * Service responsible for comparing a user basket across all stores.
- * It determines whether each store can fulfil the full basket, lists missing items,
+ * It determines whether each store can fulfil the full basket (including whether it has
+ * enough stock of each item, when the stock level is known), lists missing items,
  * and identifies the cheapest available store.
  */
 @Service
@@ -141,8 +144,20 @@ public class BasketComparisonService {
 		for (BasketItemRequest item : basketItems.values()) {
 			Product product = productsById.get(item.productId());
 			StorePrice price = storePricesByProduct.get(item.productId());
+			// A store that does not sell the product, or cannot cover the requested
+			// quantity from its current stock, cannot fulfil this basket line.
 			if (price == null) {
-				missingItems.add(new MissingItemResponse(product.getId(), product.getProductName(), item.quantity()));
+				missingItems.add(new MissingItemResponse(product.getId(), product.getProductName(), item.quantity(),
+						MissingReason.NOT_STOCKED, 0));
+				continue;
+			}
+			Integer stockQuantity = price.getStockQuantity();
+			if (stockQuantity != null && stockQuantity < item.quantity()) {
+				MissingReason reason = price.getStockStatus() == StockStatus.OUT_OF_STOCK
+						? MissingReason.OUT_OF_STOCK
+						: MissingReason.INSUFFICIENT_STOCK;
+				missingItems.add(new MissingItemResponse(product.getId(), product.getProductName(), item.quantity(),
+						reason, Math.max(stockQuantity, 0)));
 				continue;
 			}
 
@@ -173,7 +188,8 @@ public class BasketComparisonService {
 					unitPrice,
 					lineTotal,
 					regularUnitPrice,
-					memberPriceApplied));
+					memberPriceApplied,
+					price.getStockStatus()));
 		}
 
     Coordinates location = storeLocations.find(store.getName());

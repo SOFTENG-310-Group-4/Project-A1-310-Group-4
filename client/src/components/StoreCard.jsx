@@ -1,11 +1,14 @@
 import { loyaltyProgramLabel } from '../constants/loyaltyPrograms'
 import StoreDistance from './StoreDistance'
+import { STOCK_STATUS_LABELS, describeMissingReason } from '../constants/stockStatus'
 
 /**
  * Component that returns the comparison result for each store.
  * Shows basket total, availability status, and store details.
  * With loyalty cards (issue #78), member-priced lines show the regular price
  * struck through, and stores whose member prices aren't in use show what a card would save.
+ * With stock status (issue #73), missing items explain why they're unavailable and
+ * lines that are running low at this store are flagged.
  */
 function StoreCard({ store , userLocation = null }) {
     const programLabel = store.loyaltyProgram ? loyaltyProgramLabel(store.loyaltyProgram) : null
@@ -48,11 +51,17 @@ function StoreCard({ store , userLocation = null }) {
                 <div className="list-block">
                     <h4>Missing items</h4>
                     <ul>
-                        {store.missingItems.map((missingItem) => (
-                            <li key={missingItem.productId}>
-                                {missingItem.productName} x {missingItem.quantity}
-                            </li>
-                        ))}
+                        {store.missingItems.map((missingItem) => {
+                            const reason = describeMissingReason(missingItem)
+                            return (
+                                <li key={missingItem.productId}>
+                                    {missingItem.productName} x {missingItem.quantity}
+                                    {reason ? (
+                                        <em className="stock-badge stock-out">{reason}</em>
+                                    ) : null}
+                                </li>
+                            )
+                        })}
                     </ul>
                 </div>
             ) : null}
@@ -72,6 +81,10 @@ function StoreCard({ store , userLocation = null }) {
                                     {' '}
                                     <span className="member-badge">{programLabel ?? 'Member'} price</span>
                                 </>
+                            ) : null}
+                            {/* Only flag low stock, a badge on every in-stock line would be noise. */}
+                            {lineItem.stockStatus === 'LOW_STOCK' ? (
+                                <em className="stock-badge stock-low">{STOCK_STATUS_LABELS.LOW_STOCK}</em>
                             ) : null}
                         </li>
                     ))}

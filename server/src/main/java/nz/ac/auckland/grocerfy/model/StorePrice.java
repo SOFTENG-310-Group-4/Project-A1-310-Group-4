@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.hibernate.annotations.Immutable;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,6 +43,13 @@ public class StorePrice {
     @Enumerated(EnumType.STRING)
     private LoyaltyProgram loyaltyProgram;
 
+    /**
+     * Units this store currently has on hand, or null when unknown (the scrapers don't
+     * collect stock levels yet). Unknown stock is treated as available.
+     */
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity;
+
     public StorePrice() { }
 
     public StorePrice(Product product, Store store, BigDecimal price) {
@@ -49,6 +57,11 @@ public class StorePrice {
     }
 
     public StorePrice(Product product, Store store, BigDecimal price, BigDecimal memberPrice, LoyaltyProgram loyaltyProgram) {
+        this(product, store, price, memberPrice, loyaltyProgram, null);
+    }
+
+    public StorePrice(Product product, Store store, BigDecimal price, BigDecimal memberPrice, LoyaltyProgram loyaltyProgram,
+            Integer stockQuantity) {
         this.product = product;
         this.store = store;
         this.price = price;
@@ -56,6 +69,7 @@ public class StorePrice {
         boolean hasMemberPrice = memberPrice != null && loyaltyProgram != null;
         this.memberPrice = hasMemberPrice ? memberPrice : null;
         this.loyaltyProgram = hasMemberPrice ? loyaltyProgram : null;
+        this.stockQuantity = stockQuantity;
     }
 
     public Product getProduct() {
@@ -76,6 +90,17 @@ public class StorePrice {
 
     public LoyaltyProgram getLoyaltyProgram() {
         return loyaltyProgram;
+    }
+
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
+
+    /**
+     * @return the stock status at this store, or null when the stock level is unknown
+     */
+    public StockStatus getStockStatus() {
+        return stockQuantity == null ? null : StockStatus.fromQuantity(stockQuantity);
     }
 
     @Override 
