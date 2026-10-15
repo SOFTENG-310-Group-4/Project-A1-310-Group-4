@@ -20,17 +20,23 @@
             {
                 "store_name": "Royal Oak",
                 "address": "691 Manukau Road, Royal Oak, Auckland 1023",
-                "region_cookie": "e1925ea7-01bc-4358-ae7c-c6502da5ab12"
+                "region_cookie": "e1925ea7-01bc-4358-ae7c-c6502da5ab12",
+                "latitude": -36.91004274731704,
+                "longitude": 174.77460064793365
             },
             {
                 "store_name": "Manukau",
                 "address": "6 Cavendish Drive, Manukau City Centre, Auckland 2104",
-                "region_cookie": "9cd8eb60-3222-4efc-bd7c-50e03e6a81a4" 
+                "region_cookie": "9cd8eb60-3222-4efc-bd7c-50e03e6a81a4",
+                "latitude": -36.98806078296217,
+                "longitude": 174.8805700634875
             },
             {
                 "store_name": "Albany",
                 "address": "Don McKinnon Drive, Albany, Auckland 0632",
-                "region_cookie": "65defcf2-bc15-490e-a84f-1f13b769cd22"
+                "region_cookie": "65defcf2-bc15-490e-a84f-1f13b769cd22",
+                "latitude": -36.7301359077739,
+                "longitude": 174.70651056535212
             }
         ]
     },
@@ -54,17 +60,23 @@
             {
                 "store_name": "Browns Bay",
                 "address": "2 Inverness Road, Browns Bay, Auckland 0630",
-                "region_cookie": "dbdfdd2a-55f7-4870-9b51-979286323647"
+                "region_cookie": "dbdfdd2a-55f7-4870-9b51-979286323647",
+                "latitude": -36.7157760668347,
+                "longitude": 174.74746710292413
             },
             {
                 "store_name": "Albany",
                 "address": "219 Don McKinnon Drive, Albany, Auckland 0632",
-                "region_cookie": "773ad0a0-024e-46c5-a94b-df1cf86d25cc" 
+                "region_cookie": "773ad0a0-024e-46c5-a94b-df1cf86d25cc",
+                "latitude": -36.728124404213666,
+                "longitude": 174.71052513696
             },
             {
                 "store_name": "Metro Queen Street",
                 "address": "125 Queen Street, Auckland Central, Auckland 1010",
-                "region_cookie": "60928d93-06fa-4d8f-92a6-8c359e7e846d"
+                "region_cookie": "60928d93-06fa-4d8f-92a6-8c359e7e846d",
+                "latitude": -36.84645113082319,
+                "longitude": 174.76580288342956
             }
         ]
     },
@@ -90,17 +102,23 @@
             {
                 "store_name": "Three Kings",
                 "address": "532 Mt Albert Road, Three Kings, Auckland 1042",
-                "region_cookie": "9529"
+                "region_cookie": "9529",
+                "latitude": -36.90823593523086,
+                "longitude": 174.75551086414578
             },
             {
                 "store_name": "Manukau",
                 "address": "652 Great South Road, Manukau, Auckland 2104",
-                "region_cookie": "9161"
+                "region_cookie": "9161",
+                "latitude": -36.986815488079785,
+                "longitude": 174.8837698329062
             },
             {
                 "store_name": "Metro Albert Street",
                 "address": "AMP Centre, Ground Floor, Albert Street, Auckland 1010",
-                "region_cookie": "9437"
+                "region_cookie": "9437",
+                "latitude": -36.84360043038811,
+                "longitude": 174.7653984473587
             }
         ]
     }

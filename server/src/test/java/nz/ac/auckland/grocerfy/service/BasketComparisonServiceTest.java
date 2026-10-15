@@ -7,6 +7,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import nz.ac.auckland.grocerfy.dto.BasketComparisonRequest;
 import nz.ac.auckland.grocerfy.dto.BasketComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.BasketItemRequest;
+import nz.ac.auckland.grocerfy.dto.Coordinates;
 import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.StoreLineItemResponse;
 import nz.ac.auckland.grocerfy.model.Allergen;
@@ -41,6 +44,9 @@ class BasketComparisonServiceTest {
 
 	@Mock
 	private StorePriceRepository storePriceRepository;
+
+  @Mock
+  private StoreLocationLookup storeLocations;
 
 	@InjectMocks
 	private BasketComparisonService basketComparisonService;
@@ -189,4 +195,21 @@ class BasketComparisonServiceTest {
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Unknown product ids");
 	}
+
+  @Test
+  void storeResponseIncludesCoordinatesFromLookup() {
+      when(storeLocations.find("New World Albany")).thenReturn(new Coordinates(-36.72, 174.71));
+      when(storeLocations.find("Woolworths Three Kings")).thenReturn(null);
+
+      BasketComparisonResponse response = basketComparisonService.compareBasket(givenMemberPricedBasket(null));
+
+      StoreComparisonResponse nw = storeNamed(response, "New World Albany");
+      assertThat(nw.latitude()).isEqualTo(-36.72);
+      assertThat(nw.longitude()).isEqualTo(174.71);
+
+      // a store the lookup has no entry for has no coordinates
+      StoreComparisonResponse ww = storeNamed(response, "Woolworths Three Kings");
+      assertThat(ww.latitude()).isNull();
+      assertThat(ww.longitude()).isNull();
+  }
 }

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import nz.ac.auckland.grocerfy.dto.BasketComparisonRequest;
 import nz.ac.auckland.grocerfy.dto.BasketComparisonResponse;
 import nz.ac.auckland.grocerfy.dto.BasketItemRequest;
+import nz.ac.auckland.grocerfy.dto.Coordinates;
 import nz.ac.auckland.grocerfy.dto.MissingItemResponse;
 import nz.ac.auckland.grocerfy.dto.ProductSummaryResponse;
 import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
@@ -40,12 +41,14 @@ public class BasketComparisonService {
 	private final ProductRepository productRepository;
 	private final StoreRepository storeRepository;
 	private final StorePriceRepository storePriceRepository;
+  private final StoreLocationLookup storeLocations;
 
 	public BasketComparisonService(ProductRepository productRepository, StoreRepository storeRepository,
-			StorePriceRepository storePriceRepository) {
+			StorePriceRepository storePriceRepository, StoreLocationLookup storeLocations) {
 		this.productRepository = productRepository;
 		this.storeRepository = storeRepository;
 		this.storePriceRepository = storePriceRepository;
+		this.storeLocations = storeLocations;
 	}
 
 	/**
@@ -173,6 +176,7 @@ public class BasketComparisonService {
 					memberPriceApplied));
 		}
 
+    Coordinates location = storeLocations.find(store.getName());
 		boolean available = missingItems.isEmpty();
 		BigDecimal availableSubtotal = subtotal.setScale(2, RoundingMode.HALF_UP);
 		return new StoreComparisonResponse(
@@ -186,7 +190,10 @@ public class BasketComparisonService {
 				missingItems,
 				storeProgram,
 				memberSavingApplied.setScale(2, RoundingMode.HALF_UP),
-				memberSavingAvailable.setScale(2, RoundingMode.HALF_UP));
+				memberSavingAvailable.setScale(2, RoundingMode.HALF_UP),
+        location == null ? null : location.latitude(),
+        location == null ? null : location.longitude()
+    );
 	}
 
 	/**

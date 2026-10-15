@@ -25,5 +25,8 @@ public record StoreComparisonResponse(
 		List<MissingItemResponse> missingItems,
 		LoyaltyProgram loyaltyProgram,
 		BigDecimal memberSavingApplied,
-		BigDecimal memberSavingAvailable) {
+		BigDecimal memberSavingAvailable,
+    Double latitude,
+    Double longitude
+  ) {
 }

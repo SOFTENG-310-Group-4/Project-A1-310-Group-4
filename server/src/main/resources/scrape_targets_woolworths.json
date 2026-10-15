@@ -21,17 +21,23 @@
             {
                 "store_name": "Three Kings",
                 "address": "532 Mt Albert Road, Three Kings, Auckland 1042",
-                "region_cookie": "9529"
+                "region_cookie": "9529",
+                "latitude": -36.90823593523086,
+                "longitude": 174.75551086414578
             },
             {
                 "store_name": "Manukau",
                 "address": "652 Great South Road, Manukau, Auckland 2104",
-                "region_cookie": "9161"
+                "region_cookie": "9161",
+                "latitude": -36.986815488079785,
+                "longitude": 174.8837698329062
             },
             {
                 "store_name": "Metro Albert Street",
                 "address": "AMP Centre, Ground Floor, Albert Street, Auckland 1010",
-                "region_cookie": "9437"
+                "region_cookie": "9437",
+                "latitude": -36.84360043038811,
+                "longitude": 174.7653984473587
             }
         ]
     }
