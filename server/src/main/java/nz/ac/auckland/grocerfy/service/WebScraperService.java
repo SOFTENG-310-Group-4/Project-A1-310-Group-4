@@ -56,7 +56,8 @@ public class WebScraperService {
     private int requestDelayMin;
     private int requestDelayMax;
 
-    @Value ("classpath:scrape_targets.json")
+    // which targets file to scrape; the "woolworths" profile swaps in scrape_targets_woolworths.json
+    @Value ("${grocerfy.scrape-targets:classpath:scrape_targets.json}")
     private Resource targets;
 
     @Autowired 
