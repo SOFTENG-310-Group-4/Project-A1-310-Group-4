@@ -32,7 +32,7 @@ export function useProductCatalogue(dietaryTags, allergenTags, onSuccess, onErro
             }
         }
 
-        loadProducts()
+        void loadProducts()
         return () => {
             active = false
         }

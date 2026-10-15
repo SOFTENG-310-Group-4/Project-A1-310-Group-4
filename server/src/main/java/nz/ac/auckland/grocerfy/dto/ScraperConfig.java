@@ -12,11 +12,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  * @param supermarket
  * @param links
  * @param branches
+ * @param maxPages optional ("max_pages"): pages to read per link for paginated scrapers; null means 1
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record ScraperConfig(
     String supermarket,
     List<String> links,
-    List<Map<String, String>> branches) {
-    
+    List<Map<String, String>> branches,
+    Integer maxPages) {
+
 }

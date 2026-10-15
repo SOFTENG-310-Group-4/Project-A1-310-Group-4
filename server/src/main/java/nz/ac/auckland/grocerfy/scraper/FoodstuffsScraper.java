@@ -262,17 +262,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
             }
 
             // if not empty, run regex checks on Allergen enum
-            if (!allergenString.equals("")) {
-                for (Allergen allergen : Allergen.values()) {
-                    for (String keyword : allergen.getKeywords()) {
-                        Pattern keywordPattern = Pattern.compile("\\b" + keyword + "\\b");
-                        if (keywordPattern.matcher(allergenString).find()) {
-                            productAllergens.add(allergen);
-                            break; // check next allergen
-                        }
-                    }
-                }
-            } 
+            productAllergens.addAll(matchAllergens(allergenString));
             
             // set vegan/vegetarian flag, non-gmo? read facets list
             JsonNode facets = responseNode.get("facets");

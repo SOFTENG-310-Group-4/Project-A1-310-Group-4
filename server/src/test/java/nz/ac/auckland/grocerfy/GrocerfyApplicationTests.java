@@ -1,16 +1,28 @@
 package nz.ac.auckland.grocerfy;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.MockedStatic;
+import org.springframework.boot.SpringApplication;
 
-@SpringBootTest
-class GrocerfyApplicationTests {
+/**
+ * Verifies that main() loads .env before delegating to Spring.
+ *
+ * <p>SpringApplication.run is intercepted so the test does not boot a full context. The dotenv step
+ * runs for real
+ */
+class GrocerfyApplicationTest {
 
-	/** 
-	 * Undocumented test? I assume this to mean the application can run?
-	 */
-	@Test
-	void contextLoads() {
-	}
+  @Test
+  void mainLoadsDotenvAndStartsSpring() {
+    try (MockedStatic<SpringApplication> mocked = mockStatic(SpringApplication.class)) {
+      GrocerfyApplication.main(new String[] {});
 
+      mocked.verify(
+          () -> SpringApplication.run(eq(GrocerfyApplication.class), any(String[].class)));
+    }
+  }
 }

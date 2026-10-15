@@ -81,6 +81,64 @@ describe('StoreCard', () => {
     expect(screen.getByText(/Anchor Trim Milk x 1 - \$7\.50/)).toBeInTheDocument()
   })
 
+  describe('member prices', () => {
+    const WOOLWORTHS = {
+      ...AVAILABLE_STORE,
+      storeId: 3,
+      storeName: 'Woolworths Three Kings',
+      availableSubtotal: 11.4,
+      loyaltyProgram: 'EVERYDAY_REWARDS',
+      memberSavingApplied: 1.1,
+      memberSavingAvailable: 0,
+      lineItems: [
+        { productId: 1, productName: 'Natural Yoghurt', quantity: 2, unitPrice: 4.2, lineTotal: 8.4,
+          regularUnitPrice: 4.75, memberPriceApplied: true },
+        { productId: 2, productName: 'White Bread', quantity: 1, unitPrice: 3, lineTotal: 3,
+          regularUnitPrice: 3, memberPriceApplied: false },
+      ],
+    }
+
+    it('shows member-priced lines with the regular price struck through', () => {
+      render(<StoreCard store={WOOLWORTHS} />)
+
+      expect(screen.getByText(/Natural Yoghurt x 2 - \$8\.40/)).toBeInTheDocument()
+      expect(screen.getByLabelText('regular price')).toHaveTextContent('$9.50')
+      expect(screen.getByText('Everyday Rewards price')).toBeInTheDocument()
+      expect(screen.getByText('Includes $1.10 Everyday Rewards savings')).toBeInTheDocument()
+    })
+
+    it('only marks the lines that used a member price', () => {
+      render(<StoreCard store={WOOLWORTHS} />)
+
+      expect(screen.getAllByText('Everyday Rewards price')).toHaveLength(1)
+      expect(screen.getAllByLabelText('regular price')).toHaveLength(1)
+    })
+
+    it('shows the possible saving when the card is not in use', () => {
+      render(
+        <StoreCard
+          store={{
+            ...WOOLWORTHS,
+            availableSubtotal: 12.5,
+            memberSavingApplied: 0,
+            memberSavingAvailable: 1.1,
+            lineItems: WOOLWORTHS.lineItems.map((line) => ({ ...line, memberPriceApplied: false })),
+          }}
+        />,
+      )
+
+      expect(screen.getByText('Save $1.10 with Everyday Rewards')).toBeInTheDocument()
+      expect(screen.queryByText('Everyday Rewards price')).not.toBeInTheDocument()
+    })
+
+    it('shows nothing about member prices for stores without them', () => {
+      render(<StoreCard store={AVAILABLE_STORE} />)
+
+      expect(screen.queryByText(/Everyday Rewards/)).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('regular price')).not.toBeInTheDocument()
+    })
+  })
+
   it('shows a subtotal of zero when no basket lines are available', () => {
     render(
       <StoreCard

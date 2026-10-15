@@ -1,0 +1,348 @@
+{
+  "data": {
+    "My": {
+      "myKey": "My",
+      "products": {
+        "__typename": "ProductPagedResponseV2",
+        "totalCount": 90,
+        "pageSize": 36,
+        "totalPages": 3,
+        "currentPage": 0,
+        "results": [
+          {
+            "__typename": "SponsoredProduct",
+            "adId": "display_b5DqjCpEaAO5yfqGaXmk8P1PG-oKCAoGNzY4OTExEgAaDAjuuNHWBhCtjKPtASICCAE=",
+            "adExpiry": "2026-10-18T05:43:10.497600045Z",
+            "adRank": 1,
+            "sku": "768911",
+            "productName": "Up&Go Protein Liquid Breakfast Choc Hit Fridge Pack 12 x 250mL",
+            "slug": "up-go-protein-liquid-breakfast-choc-hit-fridge-pack",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "variantKey": "768911-EA",
+                "name": "Up&Go Protein Liquid Breakfast Choc Hit Fridge Pack 12 x 250mL",
+                "unitOfMeasure": "EACH",
+                "__typename": "VariantSummary",
+                "variantPrice": {
+                  "cupPrice": 7.16,
+                  "cupUnit": "1L",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-768911-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "768911-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 21.49,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": 5,
+            "brand": "Up&Go"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "281082",
+            "productName": "Woolworths Fresh Broccoli Head",
+            "slug": "woolworths-fresh-broccoli-head",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "281082-EA",
+                "name": "Woolworths Fresh Broccoli Head",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 2,
+                  "cupUnit": "1EA",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-281082-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "281082-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 2,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": 0,
+            "brand": "Woolworths"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "133211",
+            "productName": "Woolworths Fresh Bananas Yellow Loose Min Order 250g",
+            "slug": "woolworths-fresh-bananas-yellow-loose",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "133211-KG",
+                "name": "Woolworths Fresh Bananas Yellow Loose Min Order 250g",
+                "unitOfMeasure": "KG",
+                "variantPrice": {
+                  "cupPrice": 3.99,
+                  "cupUnit": "1KG",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-133211-KG",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "133211-KG",
+                  "sellingUnit": "KG",
+                  "sellingPrice": 3.99,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              },
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "133211-EA",
+                "name": "Woolworths Fresh Bananas Yellow Loose Min Order 250g",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 1,
+                  "cupUnit": "1EA",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-133211-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "133211-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 1,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": 0,
+            "brand": "Woolworths"
+          },
+          {
+            "__typename": "ContentInGridResultItem",
+            "body": null,
+            "brandName": "F2715-CIGC-GetGameReady",
+            "campaignId": "Internal",
+            "cta": {
+              "__typename": "ContentInGridCta",
+              "appearance": "BUTTON",
+              "label": "Shop now",
+              "ariaLabel": "Shop now",
+              "link": "/discover/food-inspiration/get-game-ready",
+              "variant": "Secondary",
+              "target": null,
+              "rel": null
+            },
+            "heading": null,
+            "isCarousel": true,
+            "productGroupKey": "199405",
+            "products": [
+              {
+                "__typename": "ProductSummary",
+                "sku": "593139",
+                "productName": "Big Ben Xxl Chilled Single Pie Mince & Double Cheese 210g",
+                "slug": "big-ben-xxl-chilled-single-pie-mince-double-cheese",
+                "storeKey": "9228",
+                "variants": [
+                  {
+                    "__typename": "VariantSummary",
+                    "variantKey": "593139-EA",
+                    "name": "Big Ben Xxl Chilled Single Pie Mince & Double Cheese 210g",
+                    "unitOfMeasure": "EACH",
+                    "variantPrice": {
+                      "cupPrice": 1.71,
+                      "cupUnit": "100G",
+                      "currency": "NZD",
+                      "isSpecial": true,
+                      "isClubPrice": false,
+                      "isBoostOffer": false,
+                      "priceKey": "9228-593139-EA",
+                      "wasCupUnit": "100G",
+                      "wasCupPrice": 2.14,
+                      "sku": "593139-EA",
+                      "sellingUnit": "EA",
+                      "sellingPrice": 3.6,
+                      "savedPercentage": 0,
+                      "savedAmount": 0.9,
+                      "wasPrice": 4.5,
+                      "__typename": "VariantPrice"
+                    }
+                  }
+                ],
+                "isAlcohol": false,
+                "isTobacco": false,
+                "healthStarRating": 1.5,
+                "brand": "Big Ben"
+              }
+            ],
+            "textColour": "White"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "6075787",
+            "productName": "Woolworths Essentials Beef Mince Value 400g",
+            "slug": "woolworths-essentials-beef-mince-value",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "6075787-EA",
+                "name": "Woolworths Essentials Beef Mince Value 400g",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 25,
+                  "cupUnit": "1KG",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-6075787-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "6075787-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 10,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": null,
+            "brand": "Woolworths Essentials"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "73034",
+            "productName": "Woolworths NZ Chicken Breast Skinless Boneless Min Order 1kg",
+            "slug": "woolworths-nz-chicken-breast-skinless-boneless",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "73034-KG",
+                "name": "Woolworths NZ Chicken Breast Skinless Boneless Min Order 1kg",
+                "unitOfMeasure": "KG",
+                "variantPrice": {
+                  "cupPrice": 15.4,
+                  "cupUnit": "1KG",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-73034-KG",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "73034-KG",
+                  "sellingUnit": "KG",
+                  "sellingPrice": 15.4,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              },
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "73034-EA",
+                "name": "Woolworths NZ Chicken Breast Skinless Boneless Min Order 1kg",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 15.4,
+                  "cupUnit": "1EA",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-73034-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "73034-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 15.4,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": 0,
+            "brand": "Woolworths"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "119225",
+            "productName": "Woolworths Chicken Stir Fry Tray 500g",
+            "slug": "woolworths-chicken-stir-fry-tray",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "119225-EA",
+                "name": "Woolworths Chicken Stir Fry Tray 500g",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 20,
+                  "cupUnit": "1KG",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-119225-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "119225-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 10,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "healthStarRating": null,
+            "brand": "Woolworths"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -42,7 +42,12 @@ runs:
     - name: 'Prepare output artifact'
       if: github.event_name != 'workflow_run'
       shell: bash
-      run: find -iname "*$(test ${build_type} = maven && echo target || echo build)" -type d -exec tar -rf output.tar {} \+
+      run: find . -path '*/node_modules' -prune -o -iname "*$(test ${build_type} = maven && echo target || echo build)" -type d -exec tar -rf output.tar {} \+ 
+
+    - name: 'Add frontend coverage to output artifact'
+      if: github.event_name != 'workflow_run'
+      shell: bash
+      run: tar -rf output.tar client/coverage/lcov.info
 
     - name: 'Set groupId'
       if: github.event_name != 'workflow_run' && env.build_type == 'maven'
@@ -147,7 +152,7 @@ runs:
       with:
         args: >
           -Dsonar.projectKey=${{ inputs.project-key }}
-          -Dsonar.organization=softeng-310-group-4
+          -Dsonar.organization=${{ inputs.sonar-organization }}
           -Dsonar.token=${{ inputs.sonar-token }}
           -Dsonar.projectBaseDir=.
           -Dsonar.sources=server/src/main/java,server/src/main/resources,client/src 
