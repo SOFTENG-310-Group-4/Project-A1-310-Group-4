@@ -4,7 +4,7 @@ import StoreCard from './StoreCard'
  * Renders each of the store cards for the comparison result.
  * Also shows the cheapest option available.
  */
-function ResultsPanel({ comparison }) {
+function ResultsPanel({ comparison, userLocation = null }) {
     return (
         <section className="panel results-panel">
           <div className="section-heading">
@@ -31,7 +31,7 @@ function ResultsPanel({ comparison }) {
 
           <div className="store-grid">
             {comparison.stores.map((store) => (
-                <StoreCard key={store.storeId} store={store} />
+                <StoreCard key={store.storeId} store={store} userLocation={userLocation} />
             ))}
           </div>
         </section>

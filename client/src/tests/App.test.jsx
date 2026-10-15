@@ -1,6 +1,10 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { getCurrentPosition } from '../utils/getCurrentPosition' 
+vi.mock('../utils/getCurrentPosition', () => ({
+  getCurrentPosition: vi.fn(),
+}))
 
 import App from '../App'
 
@@ -220,5 +224,26 @@ describe('basket interaction with the filter', () => {
 
   expect(screen.getByRole('combobox')).toHaveValue('3')
   expect(screen.getByRole('spinbutton')).toHaveValue(2)
+})
+
+describe('location button', () => {
+  it('is not visible when the comparison is not yet loaded', async () => {
+    await renderAndLoad()
+    expect(screen.queryByRole('button', { name: /use my location/i })).not.toBeInTheDocument()
+  })
+
+  it('shows distance note after location is set', async () => {
+    const user = await renderAndLoad()
+    await user.click(screen.getByRole('button', { name: 'Compare basket' }))
+    expect(await screen.findByText('Use my location')).toBeInTheDocument()
+
+    vi.mocked(getCurrentPosition).mockResolvedValueOnce({ latitude: 51.5, longitude: -0.1 })
+
+    await user.click(screen.getByRole('button', { name: 'Use my location' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Distances are shown on each store.')).toBeInTheDocument()
+    })
+  })
 })
 })

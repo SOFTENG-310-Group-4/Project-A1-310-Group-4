@@ -1,4 +1,5 @@
 import { loyaltyProgramLabel } from '../constants/loyaltyPrograms'
+import StoreDistance from './StoreDistance'
 
 /**
  * Component that returns the comparison result for each store.
@@ -6,7 +7,7 @@ import { loyaltyProgramLabel } from '../constants/loyaltyPrograms'
  * With loyalty cards (issue #78), member-priced lines show the regular price
  * struck through, and stores whose member prices aren't in use show what a card would save.
  */
-function StoreCard({ store }) {
+function StoreCard({ store , userLocation = null }) {
     const programLabel = store.loyaltyProgram ? loyaltyProgramLabel(store.loyaltyProgram) : null
     const savingApplied = Number(store.memberSavingApplied ?? 0)
     const savingAvailable = Number(store.memberSavingAvailable ?? 0)
@@ -18,7 +19,10 @@ function StoreCard({ store }) {
                     <h3>{store.storeName}</h3>
                     <p>{store.region}</p>
                 </div>
-                <span>{store.available ? 'Basket available' : 'Missing items'}</span>
+                <div className="store-meta">
+                  <span>{store.available ? 'Basket available' : 'Missing items'}</span>
+                  <StoreDistance userLocation={userLocation} store={store} />
+                </div>
             </div>
 
             <p className="store-address">{store.address}</p>
