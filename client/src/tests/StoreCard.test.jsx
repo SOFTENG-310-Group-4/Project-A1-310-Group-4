@@ -90,4 +90,41 @@ describe('StoreCard', () => {
 
     expect(screen.getByText('$0.00')).toBeInTheDocument()
   })
+
+  it('flags available lines that are running low on stock', () => {
+    render(
+      <StoreCard
+        store={{
+          ...AVAILABLE_STORE,
+          lineItems: [
+            { productId: 1, productName: 'NZ Gala Apple', quantity: 2, lineTotal: 5, stockStatus: 'IN_STOCK' },
+            { productId: 2, productName: 'Anchor Trim Milk', quantity: 1, lineTotal: 7.5, stockStatus: 'LOW_STOCK' },
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getAllByText('Low stock')).toHaveLength(1)
+    expect(screen.getByText(/Anchor Trim Milk x 1/)).toHaveTextContent('Low stock')
+    expect(screen.queryByText('In stock')).not.toBeInTheDocument()
+  })
+
+  it('explains why each missing item is unavailable at the store', () => {
+    render(
+      <StoreCard
+        store={{
+          ...UNAVAILABLE_STORE,
+          missingItems: [
+            { productId: 2, productName: 'Anchor Trim Milk', quantity: 1, reason: 'OUT_OF_STOCK', availableQuantity: 0 },
+            { productId: 3, productName: 'Tip Top White Bread', quantity: 4, reason: 'INSUFFICIENT_STOCK', availableQuantity: 2 },
+            { productId: 4, productName: 'Tegel Chicken Breast', quantity: 1, reason: 'NOT_STOCKED', availableQuantity: 0 },
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getByText('Out of stock')).toBeInTheDocument()
+    expect(screen.getByText('Only 2 in stock')).toBeInTheDocument()
+    expect(screen.getByText('Not sold here')).toBeInTheDocument()
+  })
 })
