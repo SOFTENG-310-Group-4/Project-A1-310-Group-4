@@ -152,7 +152,7 @@ runs:
       with:
         args: >
           -Dsonar.projectKey=${{ inputs.project-key }}
-          -Dsonar.organization=softeng-310-group-4
+          -Dsonar.organization=${{ inputs.sonar-organization }}
           -Dsonar.token=${{ inputs.sonar-token }}
           -Dsonar.projectBaseDir=.
           -Dsonar.sources=server/src/main/java,server/src/main/resources,client/src 
