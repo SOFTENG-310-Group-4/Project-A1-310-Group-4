@@ -1,4 +1,4 @@
-package nz.ac.auckland.grocerfy.scraper;
+package nz.ac.auckland.grocerfy.scraper.woolworths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,11 +35,11 @@ public class WoolworthsScraperLiveTest {
 		scraper.setMaxPages(1);
 
 		assertTrue(scraper.changeStore("9529"), "store change to Three Kings failed");
-		assertNotNull(scraper.guestToken, "Woolworths did not hand out a guest token");
+		assertNotNull(scraper.session.guestToken(), "Woolworths did not hand out a guest token");
 
 		List<ProductInfo> products = scraper.fetchProducts("9-BDB6545B"); // Fruit & Veg
 		assertFalse(products.isEmpty(), "no products returned");
-		assertEquals("9270", scraper.pinnedStoreKey, "products did not come from Three Kings");
+		assertEquals("9270", scraper.session.pinnedStoreKey(), "products did not come from Three Kings");
 		for (ProductInfo product : products) {
 			assertTrue(product.price().compareTo(BigDecimal.ZERO) > 0, "bad price for " + product.productName());
 			assertFalse(product.productSize().isBlank());

@@ -29,7 +29,7 @@ import nz.ac.auckland.grocerfy.model.StorePrice;
 import nz.ac.auckland.grocerfy.scraper.NewWorldScraper;
 import nz.ac.auckland.grocerfy.scraper.PaknsaveScraper;
 import nz.ac.auckland.grocerfy.scraper.SupermarketScraper;
-import nz.ac.auckland.grocerfy.scraper.WoolworthsScraper;
+import nz.ac.auckland.grocerfy.scraper.woolworths.WoolworthsScraper;
 
 @Service
 public class WebScraperService {
