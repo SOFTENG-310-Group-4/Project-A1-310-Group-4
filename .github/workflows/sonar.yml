@@ -13,8 +13,11 @@ jobs:
       actions: read
       contents: read
     steps:
+      - name: 'Checkout action repo'
+        uses: actions/checkout@v4
+
       - name: 'Sonar analysis'
-        uses: $/.github/actions
+        uses: ./.github/actions
         with:
           distribution: "zulu"
           java-version: '17'
