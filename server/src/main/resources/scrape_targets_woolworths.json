@@ -1,0 +1,44 @@
+[
+    {
+        "supermarket": "Woolworths",
+        "max_pages": 2,
+        "links": [
+            "9-BDB6545B",
+            "9-75C37855",
+            "9_0C90660",
+            "9-1B62CA0E",
+            "9-18EB43BA",
+            "9-5C2568E0",
+            "9-4286804C",
+            "9-1C861292",
+            "9_32FCDBF",
+            "9-9CE98992",
+            "9-F51D37CD",
+            "9-50BDA4A9",
+            "9-3C550DA5"
+        ],
+        "branches": [
+            {
+                "store_name": "Three Kings",
+                "address": "532 Mt Albert Road, Three Kings, Auckland 1042",
+                "region_cookie": "9529",
+                "latitude": -36.90823593523086,
+                "longitude": 174.75551086414578
+            },
+            {
+                "store_name": "Manukau",
+                "address": "652 Great South Road, Manukau, Auckland 2104",
+                "region_cookie": "9161",
+                "latitude": -36.986815488079785,
+                "longitude": 174.8837698329062
+            },
+            {
+                "store_name": "Metro Albert Street",
+                "address": "AMP Centre, Ground Floor, Albert Street, Auckland 1010",
+                "region_cookie": "9437",
+                "latitude": -36.84360043038811,
+                "longitude": 174.7653984473587
+            }
+        ]
+    }
+]

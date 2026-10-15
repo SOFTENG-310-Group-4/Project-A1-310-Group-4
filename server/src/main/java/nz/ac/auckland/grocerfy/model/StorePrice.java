@@ -1,10 +1,14 @@
 package nz.ac.auckland.grocerfy.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
+
+import org.hibernate.annotations.Immutable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,87 +17,108 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/**
- * Create store price entities for different products and their store prices.
- * Also tracks how many units of the product the store currently has in stock.
- */
 @Entity
-@Table(name = "store_prices", uniqueConstraints = @UniqueConstraint(columnNames = { "product_id", "store_id" }))
+@Immutable
+@Table(name = "store_prices",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "store_id"})
+)
 public class StorePrice {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long storePriceId;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "product_id", nullable = false)
-	private Product product;
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "store_id", nullable = false)
-	private Store store;
+    private BigDecimal price;
 
-	@Column(nullable = false, precision = 10, scale = 2)
-	private BigDecimal price;
+    /** Lower price for members of loyaltyProgram, or null if the product has no member price. */
+    private BigDecimal memberPrice;
 
-	@Column(name = "stock_quantity", nullable = false)
-	private int stockQuantity;
+    @Enumerated(EnumType.STRING)
+    private LoyaltyProgram loyaltyProgram;
 
-	protected StorePrice() {
-	}
+    /**
+     * Units this store currently has on hand, or null when unknown (the scrapers don't
+     * collect stock levels yet). Unknown stock is treated as available.
+     */
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity;
 
-	public StorePrice(Product product, Store store, BigDecimal price, int stockQuantity) {
-		this.product = product;
-		this.store = store;
-		this.price = price;
-		this.stockQuantity = stockQuantity;
-	}
+    public StorePrice() { }
 
-	public Long getStorePriceId() {
-		return storePriceId;
-	}
+    public StorePrice(Product product, Store store, BigDecimal price) {
+        this(product, store, price, null, null);
+    }
 
-	public void setStorePriceId(Long storePriceId) {
-		this.storePriceId = storePriceId;
-	}
+    public StorePrice(Product product, Store store, BigDecimal price, BigDecimal memberPrice, LoyaltyProgram loyaltyProgram) {
+        this(product, store, price, memberPrice, loyaltyProgram, null);
+    }
 
-	public Product getProduct() {
-		return product;
-	}
+    public StorePrice(Product product, Store store, BigDecimal price, BigDecimal memberPrice, LoyaltyProgram loyaltyProgram,
+            Integer stockQuantity) {
+        this.product = product;
+        this.store = store;
+        this.price = price;
+        // a member price only makes sense together with the programme it belongs to
+        boolean hasMemberPrice = memberPrice != null && loyaltyProgram != null;
+        this.memberPrice = hasMemberPrice ? memberPrice : null;
+        this.loyaltyProgram = hasMemberPrice ? loyaltyProgram : null;
+        this.stockQuantity = stockQuantity;
+    }
 
-	public void setProduct(Product product) {
-		this.product = product;
-	}
+    public Product getProduct() {
+        return product;
+    }
 
-	public Store getStore() {
-		return store;
-	}
+    public Store getStore() {
+        return store;
+    }
 
-	public void setStore(Store store) {
-		this.store = store;
-	}
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-	public BigDecimal getPrice() {
-		return price;
-	}
+    public BigDecimal getMemberPrice() {
+        return memberPrice;
+    }
 
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
+    public LoyaltyProgram getLoyaltyProgram() {
+        return loyaltyProgram;
+    }
 
-	public int getStockQuantity() {
-		return stockQuantity;
-	}
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
 
-	public void setStockQuantity(int stockQuantity) {
-		this.stockQuantity = stockQuantity;
-	}
+    /**
+     * @return the stock status at this store, or null when the stock level is unknown
+     */
+    public StockStatus getStockStatus() {
+        return stockQuantity == null ? null : StockStatus.fromQuantity(stockQuantity);
+    }
 
-	public StockStatus getStockStatus() {
-		return StockStatus.fromQuantity(stockQuantity);
-	}
+    @Override 
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof StorePrice)) {
+            return false;
+        }
 
-	public String getPriceLabel() {
-		return "$" + price.setScale(2, java.math.RoundingMode.HALF_UP);
-	}
+        StorePrice compPrice = (StorePrice) obj;
+        return (getProduct().getId().equals(compPrice.getProduct().getId())
+                && getStore().getId().equals(compPrice.getStore().getId()));
+    }
+
+    @Override 
+    public int hashCode() {
+        return Objects.hash(getProduct(), getStore());
+    }
 }

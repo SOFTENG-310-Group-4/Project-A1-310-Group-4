@@ -1,10 +1,14 @@
 import BasketLine from './BasketLine'
+import LoyaltyToggle from './LoyaltyToggle'
 
 /**
  * Form for the basket, containing list of BasketLine rows, an
- * "Add item" button, and a "Compare basket" button.
+ * "Add item" button, the loyalty card toggles, and a "Compare basket" button.
  */
-function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLine, onUpdateLine, onSubmit, setError }) {
+function BasketForm({
+    cartLines, products, loading, error, onAddLine, onRemoveLine, onUpdateLine, onSubmit, setError,
+    loyaltyPrograms = [], onToggleLoyaltyProgram = () => {},
+}) {
 
     function handleAddLine() {
     const hasEmptyLine = cartLines.some(
@@ -48,6 +52,8 @@ function BasketForm({ cartLines, products, loading, error, onAddLine, onRemoveLi
                     />
                 ))}
             </div>
+
+            <LoyaltyToggle selectedPrograms={loyaltyPrograms} onToggleProgram={onToggleLoyaltyProgram} />
 
             <button type="submit" className="primary-button" disabled={loading || products.length === 0}>
                 {loading ? 'Comparing stores...' : 'Compare basket'}

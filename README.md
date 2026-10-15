@@ -24,11 +24,26 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
 1. Navigate to the client folder with `cd client`
 2. Run `npm install` to install the frontend dependencies. 
     - On Windows, if `npm` commands are blocked with a "running scripts is disabled" error, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` once in PowerShell. 
+### Setting up `.env`
+Grocerfy uses an LLM-powered feature that requires an OpenAI API key.
+The .env file should be located in the project root directory. To set it up:
+1. Find the .env.example file in the project root.
+2. Rename .env.example to .env by removing .example from the filename.
+3. Open .env and replace the placeholder with your OpenAI API key:
+```
+OPENAI_API_KEY=your-key-here
+```
 ### Deployment
-**Note:** For the best experience, run the backend and frontend servers in separate terminals. The backend server **must** be started before launching the frontend server.
+**Note:** The backend server **must** be started before launching the frontend server.
 #### Backend
 1. From the project root, navigate to the server folder with `cd server`
-2. Start the backend server with `./mvnw spring-boot:run` (Mac/Linux) or `.\mvnw.cmd spring-boot:run` (Windows).
+2. Start the backend server using one of the following options:
+- New World and Paknsave database (Mac/Linux) `./mvnw spring-boot:run` 
+- New World and Paknsave database (Windows) `.\mvnw.cmd spring-boot:run` 
+
+    or
+- Woolworths database (Windows) `./mvnw spring-boot:run "-Dspring-boot.run.profiles=woolworths"`  
+- Woolworths database (Mac/Linux) `./mvnw spring-boot:run "-Dspring-boot.run.profiles=woolworths"` 
 3. Near the bottom of the terminal, you should see "Started GrocerfyApplication". This server runs on http://localhost:8080. You do not need to open this link to run Grocerfy
 #### Frontend
 1. From the project root, navigate to the client folder with `cd client`
@@ -43,7 +58,7 @@ After installing Node.js, open a **new** terminal window (or restart your IDE) b
     * Navigate to the client folder wtih `cd client`
     * Then run `npm test`
 
-**Note:** Running the frontend test suites does not require the backend server to be running. The first run of `npm test` may take noticeably longer than later runs, as Vitest compiles the test files and sets up the environment before caching them. Subsequent runs are much faster.
+**Note:** Running the frontend test suites does not require the backend server to be running.
 
 #### Verifying Visually
 * Backend:

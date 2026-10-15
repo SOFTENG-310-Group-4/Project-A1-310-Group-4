@@ -3,9 +3,10 @@
  * rather than the frontend (client side) since /api/product is the source 
  * of truth that applies the dietary tag filtering.
  */
-export async function fetchProducts(dietaryTags) {
+export async function fetchProducts(dietaryTags, allergenTags) {
     const params = new URLSearchParams()
     dietaryTags.forEach((tag) => { params.append('dietary', tag) })
+    allergenTags.forEach((tag) => { params.append('allergens', tag) })
     const suffix = params.toString() ? `?${params}` : ''
 
     const response = await fetch(`/api/product${suffix}`)

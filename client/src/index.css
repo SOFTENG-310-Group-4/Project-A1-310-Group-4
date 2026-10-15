@@ -494,6 +494,49 @@ button {
 }
 
 /* =======================================
+   Loyalty Cards (member prices)
+   ======================================= */
+
+.loyalty-toggle {
+    align-items: center;
+    margin: 4px 0 10px;
+}
+
+.loyalty-legend {
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.member-note {
+    margin: 10px 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-strong);
+}
+
+.member-hint {
+    color: var(--muted);
+}
+
+.regular-price {
+    color: var(--muted);
+}
+
+.member-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.12);
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+/* =======================================
    Accessibility Helpers
    ======================================= */
 

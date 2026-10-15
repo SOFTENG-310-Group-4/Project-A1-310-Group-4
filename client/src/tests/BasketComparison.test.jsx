@@ -152,4 +152,49 @@ describe('basket comparison', () => {
 
     await waitFor(() => expect(basket()).toBeEnabled())
   })
+
+  describe('loyalty cards', () => {
+    function everydayRewards() {
+      return screen.getByRole('checkbox', { name: 'Woolworths Everyday Rewards' })
+    }
+
+    it('sends the selected loyalty programme with the basket', async () => {
+      const user = await renderAndLoad()
+
+      await user.click(everydayRewards())
+      await user.click(basket())
+
+      await waitFor(() => expect(postedBodies).toHaveLength(1))
+      expect(postedBodies[0]).toEqual({
+        items: [{ productId: 1, quantity: 1 }],
+        loyaltyPrograms: ['EVERYDAY_REWARDS'],
+      })
+    })
+
+    it('does not compare when a card is toggled before any results are shown', async () => {
+      const user = await renderAndLoad()
+
+      await user.click(everydayRewards())
+
+      expect(everydayRewards()).toBeChecked()
+      expect(postedBodies).toHaveLength(0)
+    })
+
+    it('re-compares automatically when a card is toggled while results are showing', async () => {
+      const user = await renderAndLoad()
+
+      await user.click(basket())
+      expect(await screen.findByText('Cheapest available option')).toBeInTheDocument()
+
+      await user.click(everydayRewards())
+      await waitFor(() => expect(postedBodies).toHaveLength(2))
+      expect(postedBodies[1].loyaltyPrograms).toEqual(['EVERYDAY_REWARDS'])
+      expect(await screen.findByText('Cheapest available option')).toBeInTheDocument()
+
+      // turning it off again goes back to shelf prices
+      await user.click(everydayRewards())
+      await waitFor(() => expect(postedBodies).toHaveLength(3))
+      expect(postedBodies[2]).not.toHaveProperty('loyaltyPrograms')
+    })
+  })
 })

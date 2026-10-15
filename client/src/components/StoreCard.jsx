@@ -1,11 +1,19 @@
+import { loyaltyProgramLabel } from '../constants/loyaltyPrograms'
 import { STOCK_STATUS_LABELS, describeMissingReason } from '../constants/stockStatus'
 
 /**
  * Component that returns the comparison result for each store.
- * Shows basket total, availability status, store details, and the stock status
- * of each basket item at this location.
+ * Shows basket total, availability status, and store details.
+ * With loyalty cards (issue #78), member-priced lines show the regular price
+ * struck through, and stores whose member prices aren't in use show what a card would save.
+ * With stock status (issue #73), missing items explain why they're unavailable and
+ * lines that are running low at this store are flagged.
  */
 function StoreCard({ store }) {
+    const programLabel = store.loyaltyProgram ? loyaltyProgramLabel(store.loyaltyProgram) : null
+    const savingApplied = Number(store.memberSavingApplied ?? 0)
+    const savingAvailable = Number(store.memberSavingAvailable ?? 0)
+
     return (
         <article className={`store-card ${store.available ? 'available' : 'unavailable'}`}>
             <div className="store-header">
@@ -22,6 +30,18 @@ function StoreCard({ store }) {
                 <span>Basket total</span>
                 <strong>${store.availableSubtotal.toFixed(2)}</strong>
             </div>
+
+            {programLabel && savingApplied > 0 ? (
+                <p className="member-note">
+                    Includes ${savingApplied.toFixed(2)} {programLabel} savings
+                </p>
+            ) : null}
+
+            {programLabel && savingAvailable > 0 ? (
+                <p className="member-note member-hint">
+                    Save ${savingAvailable.toFixed(2)} with {programLabel}
+                </p>
+            ) : null}
 
             {store.missingItems.length > 0 ? (
                 <div className="list-block">
@@ -48,6 +68,16 @@ function StoreCard({ store }) {
                     {store.lineItems.map((lineItem) => (
                         <li key={lineItem.productId}>
                             {lineItem.productName} x {lineItem.quantity} - ${lineItem.lineTotal.toFixed(2)}
+                            {lineItem.memberPriceApplied ? (
+                                <>
+                                    {' '}
+                                    <s className="regular-price" aria-label="regular price">
+                                        ${(lineItem.regularUnitPrice * lineItem.quantity).toFixed(2)}
+                                    </s>
+                                    {' '}
+                                    <span className="member-badge">{programLabel ?? 'Member'} price</span>
+                                </>
+                            ) : null}
                             {/* Only flag low stock, a badge on every in-stock line would be noise. */}
                             {lineItem.stockStatus === 'LOW_STOCK' ? (
                                 <em className="stock-badge stock-low">{STOCK_STATUS_LABELS.LOW_STOCK}</em>

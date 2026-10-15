@@ -1,0 +1,143 @@
+{
+  "data": {
+    "My": {
+      "products": {
+        "totalPages": 1,
+        "currentPage": 0,
+        "results": [
+          {
+            "__typename": "ProductSummary",
+            "sku": "799855",
+            "productName": "Gopala Yoghurt Tub Natural Full Cream 750g",
+            "slug": "gopala-yoghurt-tub-natural-full-cream",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "799855-EA",
+                "name": "Gopala Yoghurt Tub Natural Full Cream 750g",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 0.63,
+                  "cupUnit": "100G",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-799855-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "799855-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 4.75,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "tags": [
+              {
+                "type": "MemberPrice",
+                "kind": "PricePromotion",
+                "userSegmentId": "rewards-member",
+                "decisionInputs": {
+                  "promotionalPrice": 420,
+                  "measureSize": 1,
+                  "uom": "EA",
+                  "promotionalComparativePrice": 56,
+                  "promotionalComparativeSize": 100,
+                  "promotionalComparativeUom": "G",
+                  "comparativeUnitPrice": 56,
+                  "comparativeUnitSize": 100,
+                  "comparativeUnitUom": "G"
+                },
+                "__typename": "ProductTag"
+              }
+            ],
+            "healthStarRating": 0,
+            "brand": "Gopala"
+          },
+          {
+            "__typename": "ProductSummary",
+            "sku": "281082",
+            "productName": "Woolworths Fresh Broccoli Head",
+            "slug": "woolworths-fresh-broccoli-head",
+            "storeKey": "9228",
+            "variants": [
+              {
+                "__typename": "VariantSummary",
+                "variantKey": "281082-EA",
+                "name": "Woolworths Fresh Broccoli Head",
+                "unitOfMeasure": "EACH",
+                "variantPrice": {
+                  "cupPrice": 2,
+                  "cupUnit": "1EA",
+                  "currency": "NZD",
+                  "isSpecial": false,
+                  "isClubPrice": false,
+                  "isBoostOffer": false,
+                  "priceKey": "9228-281082-EA",
+                  "wasCupUnit": "",
+                  "wasCupPrice": null,
+                  "sku": "281082-EA",
+                  "sellingUnit": "EA",
+                  "sellingPrice": 2,
+                  "savedPercentage": null,
+                  "savedAmount": null,
+                  "wasPrice": null,
+                  "__typename": "VariantPrice"
+                }
+              }
+            ],
+            "isAlcohol": false,
+            "isTobacco": false,
+            "tags": [
+              {
+                "type": "Multibuy_FreshDeal",
+                "kind": "PricePromotion",
+                "userSegmentId": null,
+                "decisionInputs": {
+                  "offerNumber": "25755997",
+                  "offerDescription": "BUY 2 for $3.00",
+                  "promotionQuantity": 2,
+                  "promotionalPrice": 300,
+                  "promotionalComparativePrice": 150,
+                  "promotionalComparativeSize": 1,
+                  "promotionalComparativeUom": "EA",
+                  "comparativeUnitPrice": 150,
+                  "comparativeUnitSize": 1,
+                  "comparativeUnitUom": "EA"
+                },
+                "__typename": "ProductTag"
+              },
+              {
+                "type": "OwnBrand",
+                "kind": "Product",
+                "userSegmentId": null,
+                "decisionInputs": {
+                  "ArticleGroupId": "80842"
+                },
+                "__typename": "ProductTag"
+              },
+              {
+                "type": "CountryOfOrigin_Produce",
+                "kind": "Product",
+                "userSegmentId": null,
+                "decisionInputs": {
+                  "countryOfOriginStatement": "Product of New Zealand"
+                },
+                "__typename": "ProductTag"
+              }
+            ],
+            "healthStarRating": 0,
+            "brand": "Woolworths"
+          }
+        ]
+      }
+    }
+  }
+}
