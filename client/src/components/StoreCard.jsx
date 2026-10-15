@@ -1,6 +1,9 @@
+import { STOCK_STATUS_LABELS, describeMissingReason } from '../constants/stockStatus'
+
 /**
  * Component that returns the comparison result for each store.
- * Shows basket total, availability status, and store details.
+ * Shows basket total, availability status, store details, and the stock status
+ * of each basket item at this location.
  */
 function StoreCard({ store }) {
     return (
@@ -24,11 +27,17 @@ function StoreCard({ store }) {
                 <div className="list-block">
                     <h4>Missing items</h4>
                     <ul>
-                        {store.missingItems.map((missingItem) => (
-                            <li key={missingItem.productId}>
-                                {missingItem.productName} x {missingItem.quantity}
-                            </li>
-                        ))}
+                        {store.missingItems.map((missingItem) => {
+                            const reason = describeMissingReason(missingItem)
+                            return (
+                                <li key={missingItem.productId}>
+                                    {missingItem.productName} x {missingItem.quantity}
+                                    {reason ? (
+                                        <em className="stock-badge stock-out">{reason}</em>
+                                    ) : null}
+                                </li>
+                            )
+                        })}
                     </ul>
                 </div>
             ) : null}
@@ -39,6 +48,10 @@ function StoreCard({ store }) {
                     {store.lineItems.map((lineItem) => (
                         <li key={lineItem.productId}>
                             {lineItem.productName} x {lineItem.quantity} - ${lineItem.lineTotal.toFixed(2)}
+                            {/* Only flag low stock, a badge on every in-stock line would be noise. */}
+                            {lineItem.stockStatus === 'LOW_STOCK' ? (
+                                <em className="stock-badge stock-low">{STOCK_STATUS_LABELS.LOW_STOCK}</em>
+                            ) : null}
                         </li>
                     ))}
                 </ul>
