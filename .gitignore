@@ -37,5 +37,3 @@ build/
 
 ### local db ###
 *.trace.db
-# database made by the woolworths profile
-server/h2Woolworths.mv.db
