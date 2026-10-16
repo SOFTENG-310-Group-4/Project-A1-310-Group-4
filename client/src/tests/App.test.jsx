@@ -227,21 +227,18 @@ describe('basket interaction with the filter', () => {
 })
 
 describe('location button', () => {
-  it('is not visible when the comparison is not yet loaded', async () => {
+  it('is available before comparison and enables the distance slider after location is shared', async () => {
     await renderAndLoad()
-    expect(screen.queryByRole('button', { name: /use my location/i })).not.toBeInTheDocument()
-  })
-
-  it('shows distance note after location is set', async () => {
-    const user = await renderAndLoad()
-    await user.click(screen.getByRole('button', { name: 'Compare basket' }))
-    expect(await screen.findByText('Use my location')).toBeInTheDocument()
+    const user = userEvent.setup()
+    const slider = screen.getByRole('slider', { name: 'Maximum store distance' })
+    expect(slider).toBeDisabled()
 
     vi.mocked(getCurrentPosition).mockResolvedValueOnce({ latitude: 51.5, longitude: -0.1 })
 
     await user.click(screen.getByRole('button', { name: 'Use my location' }))
 
     await waitFor(() => {
+      expect(slider).toBeEnabled()
       expect(screen.getByText('Distances are shown on each store.')).toBeInTheDocument()
     })
   })

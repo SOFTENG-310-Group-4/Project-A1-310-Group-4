@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -20,6 +20,9 @@ function renderFilter(overrides = {}) {
     onToggleAllergen: vi.fn(),
     onClear: vi.fn(),
     matchCount: 10,
+    maxDistanceKm: 50,
+    onChangeMaxDistance: vi.fn(),
+    onUseLocation: vi.fn(),
     ...overrides,
   }
 
@@ -133,5 +136,23 @@ describe('DietaryFilterBar', () => {
     renderFilter({ selectedDietary: ['VEGAN', 'NONGMO'], matchCount: 1 })
 
     expect(screen.getByText('1 product matches every selected dietary tag')).toBeInTheDocument()
+  })
+
+  it('disables the distance slider until a location is available', () => {
+    renderFilter()
+
+    expect(screen.getByRole('slider', { name: 'Maximum store distance' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Use my location' })).toBeInTheDocument()
+  })
+
+  it('reports the selected distance when the slider changes', async () => {
+    const { onChangeMaxDistance } = renderFilter({
+      userLocation: { latitude: -36.85, longitude: 174.76 },
+    })
+    const slider = screen.getByRole('slider', { name: 'Maximum store distance' })
+
+    fireEvent.change(slider, { target: { value: '15' } })
+
+    expect(onChangeMaxDistance).toHaveBeenCalledExactlyOnceWith(15)
   })
 })
