@@ -12,7 +12,7 @@ import ResultsPanel from "./components/ResultsPanel";
 import RecipeSuggestions from "./components/RecipeSuggestions";
 
 import { getCurrentPosition } from "./utils/getCurrentPosition";
-import LocationButton from "./components/LocationButton";
+import { MAX_STORE_DISTANCE_KM } from "./utils/distance";
 
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
@@ -24,6 +24,7 @@ function App() {
   const [userLocation, setUserLocation] = useState(null)
   const [locationLoading, setLocationLoading] = useState(false)
   const [locationError, setLocationError] = useState('')
+  const [maxStoreDistanceKm, setMaxStoreDistanceKm] = useState(MAX_STORE_DISTANCE_KM)
 
   const { cartLines, setCartLines, updateLine, addLine, removeLine } =
     useCartLines();
@@ -89,6 +90,7 @@ function App() {
   function clearAllTags() {
     setDietaryTags([])
     setAllergenTags([])
+    setMaxStoreDistanceKm(MAX_STORE_DISTANCE_KM)
   }
 
   function toggleAllergenTag(tag) {
@@ -180,6 +182,12 @@ function App() {
             onToggleAllergen={toggleAllergenTag}
             onClear={clearAllTags}
             matchCount={products.length}
+            maxDistanceKm={maxStoreDistanceKm}
+            onChangeMaxDistance={setMaxStoreDistanceKm}
+            userLocation={userLocation}
+            locationLoading={locationLoading}
+            locationError={locationError}
+            onUseLocation={handleUseLocation}
           />
           <CatalogueList
             products={products}
@@ -205,13 +213,11 @@ function App() {
 
       {comparison ? (
         <>
-          <LocationButton
+          <ResultsPanel
+            comparison={comparison}
             userLocation={userLocation}
-            loading={locationLoading}
-            error={locationError}
-            onUseLocation={handleUseLocation}
+            maxDistanceKm={maxStoreDistanceKm}
           />
-          <ResultsPanel comparison={comparison} userLocation={userLocation} />
         </>
       ) : null}
       

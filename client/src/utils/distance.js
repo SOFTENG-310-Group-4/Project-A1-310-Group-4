@@ -1,4 +1,5 @@
 const EARTH_RADIUS_KM = 6371
+export const MAX_STORE_DISTANCE_KM = 50
 
 const toRadians = (degrees) => (degrees * Math.PI) / 180
 
