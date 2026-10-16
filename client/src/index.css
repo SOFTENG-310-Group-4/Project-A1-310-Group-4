@@ -359,8 +359,16 @@ button {
     white-space: nowrap;
 }
 
+.store-meta {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  gap: 4px;
+}
+
 .store-address {
-    margin: 10px 0 14px;
+  margin: 10px 0 14px;
 }
 
 .store-total {
@@ -386,6 +394,18 @@ button {
     padding-left: 18px;
     display: grid;
     gap: 6px;
+}
+
+.location-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.location-control span {
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 /* Stock status badges shown next to basket lines in each store card */

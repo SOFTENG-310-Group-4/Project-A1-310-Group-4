@@ -11,6 +11,9 @@ import BasketForm from "./components/BasketForm";
 import ResultsPanel from "./components/ResultsPanel";
 import RecipeSuggestions from "./components/RecipeSuggestions";
 
+import { getCurrentPosition } from "./utils/getCurrentPosition";
+import LocationButton from "./components/LocationButton";
+
 function App() {
   const [dietaryTags, setDietaryTags] = useState([])
   const [loyaltyPrograms, setLoyaltyPrograms] = useState([])
@@ -18,6 +21,9 @@ function App() {
   const [comparison, setComparison] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [userLocation, setUserLocation] = useState(null)
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [locationError, setLocationError] = useState('')
 
   const { cartLines, setCartLines, updateLine, addLine, removeLine } =
     useCartLines();
@@ -144,6 +150,20 @@ function App() {
     }
   }
 
+  // Asks browser for users current location via getCurrentPosition
+  // which returns a Promise that resolves to { latitude, longitude }.
+  async function handleUseLocation() {
+    setLocationError('')
+    setLocationLoading(true)
+    try {
+      setUserLocation(await getCurrentPosition())
+    } catch (error) {
+      setLocationError(error.message)
+    } finally {
+      setLocationLoading(false)
+    }
+  }
+
   return (
     <main className="shell">
       <Hero
@@ -183,7 +203,18 @@ function App() {
       </section>
       <RecipeSuggestions cartLines={cartLines} dietaryTags={dietaryTags} />
 
-      {comparison ? <ResultsPanel comparison={comparison} /> : null}
+      {comparison ? (
+        <>
+          <LocationButton
+            userLocation={userLocation}
+            loading={locationLoading}
+            error={locationError}
+            onUseLocation={handleUseLocation}
+          />
+          <ResultsPanel comparison={comparison} userLocation={userLocation} />
+        </>
+      ) : null}
+      
     </main>
   );
 }

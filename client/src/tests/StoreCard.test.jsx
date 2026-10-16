@@ -81,6 +81,23 @@ describe('StoreCard', () => {
     expect(screen.getByText(/Anchor Trim Milk x 1 - \$7\.50/)).toBeInTheDocument()
   })
 
+  it('does not show distance when the user location is not provided', () => {
+    render(<StoreCard store={AVAILABLE_STORE} />)
+    expect(screen.queryByText(/km away/)).not.toBeInTheDocument()
+  })
+
+  it('shows distance when the user location is provided', () => {
+    const userLocation = { latitude: -36.7301, longitude: 174.7065 } // Albany
+    const storeWithCoordinates = {
+      ...AVAILABLE_STORE,
+      latitude: -36.91,
+      longitude: 174.7746, // Royal Oak
+    }
+    render(<StoreCard store={storeWithCoordinates} userLocation={userLocation} />)
+
+    expect(screen.getByText(/2\d\.\d km away/)).toBeInTheDocument()
+  })
+
   describe('member prices', () => {
     const WOOLWORTHS = {
       ...AVAILABLE_STORE,

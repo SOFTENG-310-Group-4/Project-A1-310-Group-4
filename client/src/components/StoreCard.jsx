@@ -1,4 +1,5 @@
 import { loyaltyProgramLabel } from '../constants/loyaltyPrograms'
+import StoreDistance from './StoreDistance'
 import { STOCK_STATUS_LABELS, describeMissingReason } from '../constants/stockStatus'
 
 /**
@@ -9,7 +10,7 @@ import { STOCK_STATUS_LABELS, describeMissingReason } from '../constants/stockSt
  * With stock status (issue #73), missing items explain why they're unavailable and
  * lines that are running low at this store are flagged.
  */
-function StoreCard({ store }) {
+function StoreCard({ store , userLocation = null }) {
     const programLabel = store.loyaltyProgram ? loyaltyProgramLabel(store.loyaltyProgram) : null
     const savingApplied = Number(store.memberSavingApplied ?? 0)
     const savingAvailable = Number(store.memberSavingAvailable ?? 0)
@@ -21,7 +22,10 @@ function StoreCard({ store }) {
                     <h3>{store.storeName}</h3>
                     <p>{store.region}</p>
                 </div>
-                <span>{store.available ? 'Basket available' : 'Missing items'}</span>
+                <div className="store-meta">
+                  <span>{store.available ? 'Basket available' : 'Missing items'}</span>
+                  <StoreDistance userLocation={userLocation} store={store} />
+                </div>
             </div>
 
             <p className="store-address">{store.address}</p>

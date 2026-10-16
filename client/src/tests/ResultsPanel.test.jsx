@@ -92,4 +92,17 @@ describe('ResultsPanel', () => {
     expect(screen.getByText('0 stores compared')).toBeInTheDocument()
     expect(screen.getByText(/no store can fulfil the full basket/i)).toBeInTheDocument()
   })
+
+  it('shows each store\'s distance once the user location is known', () => {
+  const store = makeStore({ latitude: -36.91, longitude: 174.7746 })
+
+  render(
+    <ResultsPanel
+      comparison={{ stores: [store], cheapestAvailableStore: null }}
+      userLocation={{ latitude: -36.7301, longitude: 174.7065 }}
+    />,
+  )
+
+  expect(screen.getByText(/km away/)).toBeInTheDocument()
+})
 })
