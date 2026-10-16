@@ -406,6 +406,7 @@ button {
 .location-control span {
     color: var(--muted);
     font-size: 0.9rem;
+}
 
 /* Stock status badges shown next to basket lines in each store card */
 .stock-badge {
