@@ -8,6 +8,9 @@ import java.net.http.HttpResponse.BodyHandler;
 import java.time.Duration;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Sends one HTTP request for the Woolworths scraper. The scraper only talks to the network through
  * this interface, so tests can pass in a fake that answers from canned responses.
@@ -31,20 +34,21 @@ interface HttpTransport {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(30))
             .build();
+        Logger log = LoggerFactory.getLogger(HttpTransport.class);
         return new HttpTransport() {
             @Override
             public <T> Optional<HttpResponse<T>> send(HttpRequest request, BodyHandler<T> handler) {
                 try {
                     HttpResponse<T> response = client.send(request, handler);
                     if (response.statusCode() >= 400) {
-                        System.err.println("This link has returned an error code " + response.statusCode() + ": " + request.uri());
+                        log.warn("This link has returned an error code {}: {}", response.statusCode(), request.uri());
                     }
                     return Optional.of(response);
                 } catch (InterruptedException exc) {
-                    System.err.println("Caught interrupt from " + request.uri() + ", no data returned.");
+                    log.warn("Caught interrupt from {}, no data returned.", request.uri());
                     Thread.currentThread().interrupt();
                 } catch (IOException exc) {
-                    System.err.println("Caught IO error from " + request.uri() + ", no data returned.");
+                    log.warn("Caught IO error from {}, no data returned.", request.uri());
                 }
                 return Optional.empty();
             }

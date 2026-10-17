@@ -14,6 +14,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,12 +32,19 @@ import nz.ac.auckland.grocerfy.model.Dietary;
 import nz.ac.auckland.grocerfy.util.HttpUtils;
 
 public class FoodstuffsScraper extends SupermarketScraper{
+
+    private static final Logger LOG = LoggerFactory.getLogger(FoodstuffsScraper.class);
     private static final String PRODUCT_XPATH = "//*[@itemtype='https://schema.org/Product']";
     private static final String PRODUCT_URL_XPATH = ".//a[1]";
     private static final String PRODUCT_NAME_XPATH = ".//*[@itemprop='name']";
     private static final String PRODUCT_PRICE_DOLLARS_XPATH = ".//*[@data-testid='price-dollars']";
     private static final String PRODUCT_PRICE_CENTS_XPATH = ".//*[@data-testid='price-cents']";
     private static final String PRODUCT_SIZE_XPATH = ".//*[@data-testid='product-subtitle']";
+
+    private static final String SEC_FETCH_SITE = "Sec-Fetch-Site";
+    private static final String SAME_SITE = "same-site";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final String storeAddress;
     private final String authAddress;
@@ -69,7 +79,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
         for (Dietary diet : Dietary.values()) {
             if (facetName.equalsIgnoreCase(diet.getKeyword())) {
                 dietSet.add(diet);
-                System.out.println("adding dietary " + facetName);
+                LOG.info("adding dietary {}", facetName);
                 return;
             }
         }
@@ -113,7 +123,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .uri(URI.create(authAddress))
             .headers(HttpUtils.getGenericHeaders())
             .headers(HttpUtils.getGetHeaders())
-            .header("Sec-Fetch-Site", "same-origin")
+            .header(SEC_FETCH_SITE, "same-origin")
             .headers(originRefererHeader)
             .POST(HttpRequest.BodyPublishers.ofString("{}"))
             .build();
@@ -148,8 +158,8 @@ public class FoodstuffsScraper extends SupermarketScraper{
                 .uri(request.uri())
                 .headers(HttpUtils.getGenericHeaders())
                 .headers(HttpUtils.getPostHeaders()) // post headers because of a non-traditional get (returning json)
-                .header("Sec-Fetch-Site", "same-site")
-                .header("Authorization", "Bearer " + authToken)
+                .header(SEC_FETCH_SITE, SAME_SITE)
+                .header(AUTHORIZATION, BEARER_PREFIX + authToken)
                 .headers(originRefererHeader)
                 .GET()
                 .build();
@@ -175,8 +185,8 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .uri(URI.create(storeChangeEndpoint + storeData))
             .headers(HttpUtils.getGenericHeaders())
             .headers(HttpUtils.getPostHeaders())
-            .header("Sec-Fetch-Site", "same-site")
-            .header("Authorization", "Bearer " + authToken)
+            .header(SEC_FETCH_SITE, SAME_SITE)
+            .header(AUTHORIZATION, BEARER_PREFIX + authToken)
             .headers(originRefererHeader)
             .POST(HttpRequest.BodyPublishers.ofString("{}"))
             .build();
@@ -204,12 +214,12 @@ public class FoodstuffsScraper extends SupermarketScraper{
                 // if values do not make a valid price
                 } catch (NumberFormatException e) {
                     price = null;
-                    System.err.println("Error for product: " + name + " given price " + dollarElement.text() + "." + centElement.text() + ": " + e.getLocalizedMessage());
+                    LOG.warn("Error for product: {} given price {}.{}: {}", name, dollarElement.text(), centElement.text(), e.getLocalizedMessage());
                 }
             
             // would really only happen with out of stock/broken products, recoverable so skip
             } else {
-                System.err.println("Price not found for product " + name + ", skipping...");
+                LOG.warn("Price not found for product {}, skipping...", name);
                 continue;
             }
 
@@ -236,8 +246,8 @@ public class FoodstuffsScraper extends SupermarketScraper{
             .uri(URI.create(productInfoEndpoint + storeUuid + "/product/" + productId))
             .headers(HttpUtils.getGenericHeaders())
             .headers(HttpUtils.getPostHeaders())
-            .header("Sec-Fetch-Site", "same-site")
-            .header("Authorization", "Bearer " + authToken)
+            .header(SEC_FETCH_SITE, SAME_SITE)
+            .header(AUTHORIZATION, BEARER_PREFIX + authToken)
             .headers(originRefererHeader)
             .GET()
             .build();
@@ -273,7 +283,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
 
             JsonNode categoryNode = responseNode.get("categories");
             if (categoryNode == null) {
-                System.err.println("Category JSON not found(network error?), short-circuiting...");
+                LOG.warn("Category JSON not found(network error?), short-circuiting...");
                 return Pair.of(productAllergens, productDietary);
             }
             List<String> productCategories = mapper.convertValue(categoryNode, new TypeReference<List<String>>(){});
@@ -282,7 +292,7 @@ public class FoodstuffsScraper extends SupermarketScraper{
             return Pair.of(productAllergens, productDietary);
 
         } catch (JsonProcessingException exc) {
-            System.err.println("Product info for product id " + productId + " unable to be read. Skipping...");
+            LOG.warn("Product info for product id {} unable to be read. Skipping...", productId);
         }
         
         return null;
@@ -302,10 +312,10 @@ public class FoodstuffsScraper extends SupermarketScraper{
                     category.equalsIgnoreCase("fruit")) {
                 dietaryList.add(Dietary.VEGAN);
                 dietaryList.add(Dietary.VEGETARIAN);
-                System.out.println("Product in Fruit/Veg category, adding Vegetarian/Vegan tag");
+                LOG.info("Product in Fruit/Veg category, adding Vegetarian/Vegan tag");
             } else if (category.equalsIgnoreCase("eggs")) {
                 allergenList.add(Allergen.EGG);
-                System.out.println("Product in 'Egg' category, adding egg allergy");
+                LOG.info("Product in 'Egg' category, adding egg allergy");
             }
         }
     }

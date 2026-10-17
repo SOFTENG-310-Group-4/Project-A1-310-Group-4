@@ -8,6 +8,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +25,8 @@ import nz.ac.auckland.grocerfy.dto.ProductInfo;
  * tested on its own with a recorded response.
  */
 final class WoolworthsProductParser {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WoolworthsProductParser.class);
 
     // ProductSearch response fields; only ProductSummary results are real products
     private static final String RESULTS = "results";
@@ -58,17 +64,17 @@ final class WoolworthsProductParser {
         try {
             JsonNode root = MAPPER.readTree(responseBody);
             if (root.hasNonNull("errors")) {
-                System.err.println("Woolworths search error for category " + categoryKey + ": " + root.get("errors"));
+                LOG.warn("Woolworths search error for category {}: {}", categoryKey, root.get("errors"));
                 return null;
             }
             JsonNode productsNode = root.path("data").path("My").path("products");
             if (productsNode.isMissingNode() || productsNode.isNull()) {
-                System.err.println("Woolworths search for category " + categoryKey + " returned no product list. API change?");
+                LOG.warn("Woolworths search for category {} returned no product list. API change?", categoryKey);
                 return null;
             }
             return productsNode;
         } catch (JsonProcessingException | IllegalArgumentException exc) {
-            System.err.println("Woolworths search response unreadable for category " + categoryKey + ": " + exc.getLocalizedMessage());
+            LOG.warn("Woolworths search response unreadable for category {}: {}", categoryKey, exc.getLocalizedMessage());
             return null;
         }
     }
@@ -81,7 +87,7 @@ final class WoolworthsProductParser {
         try {
             return parseProducts(MAPPER.readTree(responseBody).path("data").path("My").path("products"));
         } catch (JsonProcessingException exc) {
-            System.err.println("Woolworths product list unreadable: " + exc.getLocalizedMessage());
+            LOG.warn("Woolworths product list unreadable: {}", exc.getLocalizedMessage());
             return new ArrayList<>();
         }
     }
@@ -98,7 +104,7 @@ final class WoolworthsProductParser {
             JsonNode variant = result.path("variants").path(0);
             JsonNode priceNode = variant.path("variantPrice").path("sellingPrice");
             if (name.isEmpty() || sku.isEmpty() || !priceNode.isNumber()) {
-                System.err.println("Price not found for product " + name + ", skipping...");
+                LOG.warn("Price not found for product {}, skipping...", name);
                 continue;
             }
 
@@ -117,11 +123,9 @@ final class WoolworthsProductParser {
      * @return the SKUs of the real products on a search page, in order
      */
     static Set<String> skus(JsonNode productsNode) {
-        Set<String> skus = new LinkedHashSet<>();
-        for (JsonNode result : productSummaries(productsNode)) {
-            skus.add(result.path("sku").asText(""));
-        }
-        return skus;
+        return productSummaries(productsNode).stream()
+                .map(result -> result.path("sku").asText(""))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -165,21 +169,30 @@ final class WoolworthsProductParser {
      */
     static BigDecimal extractMemberPrice(JsonNode tags, BigDecimal shelfPrice, String sellingUnit) {
         for (JsonNode tag : tags) {
-            if (!MEMBER_PRICE_TAG.equals(tag.path("type").asText())) {
-                continue;
-            }
-            JsonNode inputs = tag.path("decisionInputs");
-            JsonNode cents = inputs.path("promotionalPrice");
-            String unit = inputs.path("uom").asText("");
-            if (!cents.isNumber() || (!unit.isEmpty() && !sellingUnit.isEmpty() && !unit.equalsIgnoreCase(sellingUnit))) {
-                continue;
-            }
-            BigDecimal memberPrice = new BigDecimal(cents.asText()).movePointLeft(2);
-            if (memberPrice.signum() > 0 && memberPrice.compareTo(shelfPrice) < 0) {
+            BigDecimal memberPrice = memberPriceFromTag(tag, shelfPrice, sellingUnit);
+            if (memberPrice != null) {
                 return memberPrice;
             }
         }
         return null;
+    }
+
+    /**
+     * @return the member price from a single tag, or null if the tag is not a usable member price
+     *     (another tag type, no price, a different unit, or not lower than the shelf price)
+     */
+    private static BigDecimal memberPriceFromTag(JsonNode tag, BigDecimal shelfPrice, String sellingUnit) {
+        if (!MEMBER_PRICE_TAG.equals(tag.path("type").asText())) {
+            return null;
+        }
+        JsonNode inputs = tag.path("decisionInputs");
+        JsonNode cents = inputs.path("promotionalPrice");
+        String unit = inputs.path("uom").asText("");
+        if (!cents.isNumber() || (!unit.isEmpty() && !sellingUnit.isEmpty() && !unit.equalsIgnoreCase(sellingUnit))) {
+            return null;
+        }
+        BigDecimal memberPrice = new BigDecimal(cents.asText()).movePointLeft(2);
+        return memberPrice.signum() > 0 && memberPrice.compareTo(shelfPrice) < 0 ? memberPrice : null;
     }
 
     /**

@@ -130,7 +130,9 @@ final class WoolworthsFakes {
             @Override public void onSubscribe(Flow.Subscription subscription) { subscription.request(Long.MAX_VALUE); }
             @Override public void onNext(ByteBuffer item) { body.append(StandardCharsets.UTF_8.decode(item)); }
             @Override public void onError(Throwable throwable) { throw new AssertionError(throwable); }
-            @Override public void onComplete() { }
+            @Override public void onComplete() {
+                // nothing to do: every chunk has already been appended in onNext
+            }
         });
         return body.toString();
     }
