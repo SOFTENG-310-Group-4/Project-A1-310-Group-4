@@ -84,7 +84,7 @@ Any contributions to Grocerfy are more than welcome! If you are interested, plea
 
 ## Tech Stack & Acknowledgements
 ### Technology Stack
-* **Backend:** Java 17, Spring Boot 4.1.0, Spring Data JPA, H2 (in-memory database)
+* **Backend:** Java 17, Spring Boot 4.1.1, Spring Data JPA, H2 (in-memory database)
 * **Frontend:** React 18, Vite
 * **Testing:** Vitest (Frontend), JUnit 5 + Spring Boot test stack (Backend)
 * **Code Quality:** SonarCloud, Snyk
