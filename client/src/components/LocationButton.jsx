@@ -6,7 +6,7 @@ function buttonLabel(loading, userLocation) {
 function LocationButton({ userLocation, loading, error, onUseLocation }) {
   return (
     <div className="location-control">
-      <button type="button" className="primary-button" onClick={onUseLocation} disabled={loading}>
+      <button type="button" className="ghost-button" onClick={onUseLocation} disabled={loading}>
         {buttonLabel(loading, userLocation)}
       </button>
       {userLocation ? <span> Distances are shown on each store.</span> : null}
