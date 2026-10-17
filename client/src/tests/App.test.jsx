@@ -22,13 +22,6 @@ const CATALOGUE = [
   { productId: 4, productName: 'Chicken Breast', packageSize: 'kg', dietInfo: [], allergens: [] },
 ]
 
-const TAG_FIELDS = {
-  gluten_free: 'glutenFree',
-  lactose_free: 'lactoseFree',
-  vegetarian: 'vegetarian',
-  vegan: 'vegan',
-}
-
 /** Records every URL the component requested, so tests can assert on them. */
 let requestedUrls = []
 

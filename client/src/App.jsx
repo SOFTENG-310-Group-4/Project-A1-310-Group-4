@@ -212,13 +212,11 @@ function App() {
       <RecipeSuggestions cartLines={cartLines} dietaryTags={dietaryTags} />
 
       {comparison ? (
-        <>
-          <ResultsPanel
-            comparison={comparison}
-            userLocation={userLocation}
-            maxDistanceKm={maxStoreDistanceKm}
-          />
-        </>
+        <ResultsPanel
+          comparison={comparison}
+          userLocation={userLocation}
+          maxDistanceKm={maxStoreDistanceKm}
+        />
       ) : null}
       
     </main>
