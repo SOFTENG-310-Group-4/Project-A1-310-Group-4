@@ -30,6 +30,8 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<java.version>17</java.version>
+		<!-- Snyk: jackson-databind 2.21.5 (managed by Spring Boot) has known vulnerabilities, fixed in 2.21.7 -->
+		<jackson-2-bom.version>2.21.7</jackson-2-bom.version>
 		<!-- Snyk: Tomcat 11.0.24 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 11.0.27 -->
 		<tomcat.version>11.0.27</tomcat.version>
 		<!-- Snyk: Jackson 3.1.5 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 3.1.7 -->
