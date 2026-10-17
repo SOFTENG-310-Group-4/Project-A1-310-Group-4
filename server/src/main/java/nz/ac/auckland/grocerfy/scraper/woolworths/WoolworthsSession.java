@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * first page after a store change, and a page that disagrees means the session was lost.
  */
 class WoolworthsSession {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WoolworthsSession.class);
 
     /** Guest tokens last 60 minutes; refresh a little early so a request never races the expiry. */
     static final Duration LIFETIME = Duration.ofMinutes(50);
@@ -97,7 +102,7 @@ class WoolworthsSession {
      */
     void refreshIfExpiring() {
         if (startedAt != null && Duration.between(startedAt, clock.get()).compareTo(LIFETIME) >= 0) {
-            System.out.println("Woolworths guest session is nearly an hour old, refreshing...");
+            LOG.info("Woolworths guest session is nearly an hour old, refreshing...");
             refresh();
         }
     }
@@ -159,7 +164,7 @@ class WoolworthsSession {
         Optional<HttpResponse<String>> responseOptional = exchange(
             WoolworthsRequests.setStore(pickupLocationId), HttpResponse.BodyHandlers.ofString());
         if (responseOptional.isEmpty() || responseOptional.get().statusCode() >= 400) {
-            System.err.println("Woolworths store change to " + pickupLocationId + " was rejected.");
+            LOG.warn("Woolworths store change to {} was rejected.", pickupLocationId);
             return false;
         }
 
@@ -167,12 +172,12 @@ class WoolworthsSession {
             JsonNode mode = mapper.readTree(responseOptional.get().body())
                 .path("data").path("setCartShoppingMode").path("shoppingMode");
             if (!pickupLocationId.equals(mode.path("pickupLocationId").asText())) {
-                System.err.println("Woolworths did not switch to store " + pickupLocationId + ": " + responseOptional.get().body());
+                LOG.warn("Woolworths did not switch to store {}: {}", pickupLocationId, responseOptional.get().body());
                 return false;
             }
-            System.out.println("Woolworths store set to " + mode.path("pickupLocation").path("name").asText());
+            LOG.info("Woolworths store set to {}", mode.path("pickupLocation").path("name").asText());
         } catch (JsonProcessingException | IllegalArgumentException exc) {
-            System.err.println("Woolworths store change response unreadable: " + exc.getLocalizedMessage());
+            LOG.warn("Woolworths store change response unreadable: {}", exc.getLocalizedMessage());
             return false;
         }
 

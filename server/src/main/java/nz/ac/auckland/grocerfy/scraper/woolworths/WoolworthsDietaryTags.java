@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -71,10 +72,9 @@ class WoolworthsDietaryTags {
             return;
         }
 
-        Set<String> skus = new HashSet<>();
-        for (ProductInfo product : products) {
-            skus.add(WoolworthsProductParser.skuOf(product.productId()));
-        }
+        Set<String> skus = products.stream()
+                .map(product -> WoolworthsProductParser.skuOf(product.productId()))
+                .collect(Collectors.toSet());
         for (Map.Entry<String, Dietary> facet : FACETS.entrySet()) {
             findForFacet(categoryKey, facet.getKey(), facet.getValue(), new HashSet<>(skus));
         }

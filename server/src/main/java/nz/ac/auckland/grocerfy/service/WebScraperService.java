@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -33,6 +36,8 @@ import nz.ac.auckland.grocerfy.scraper.woolworths.WoolworthsScraper;
 
 @Service
 public class WebScraperService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WebScraperService.class);
     // debug flag - true=always runs scraper
     private boolean bypassTimeDebug = false;
 
@@ -119,7 +124,7 @@ public class WebScraperService {
             for (ScraperConfig scraperData : mapper.readValue(inputStream, new TypeReference<List<ScraperConfig>>(){})) {
                 currentScraper = scrapers.get(scraperData.supermarket());
                 if (currentScraper == null) {
-                    System.err.println("No scraper registered for " + scraperData.supermarket() + ", skipping...");
+                    LOG.warn("No scraper registered for {}, skipping...", scraperData.supermarket());
                     continue;
                 }
                 // paginated scrapers (e.g. Woolworths) read max_pages and pause between their own requests
@@ -140,15 +145,15 @@ public class WebScraperService {
                         storeInfo.get("address"),
                         storeInfo.get("region_cookie"));
 
-                    System.out.println("Store initialised: " + currentStore.getName());
+                    LOG.info("Store initialised: {}", currentStore.getName());
 
                     scrapeLinks(scraperData.links(), currentStore);
 
                 }
-                System.out.println("All stores for " + scraperData.supermarket() + " completed.");
+                LOG.info("All stores for {} completed.", scraperData.supermarket());
             }
         } catch (IOException exc) {
-            System.err.println("Some IO issue, " + exc.getLocalizedMessage());
+            LOG.error("Some IO issue, {}", exc.getLocalizedMessage());
         } 
     }
 
@@ -199,7 +204,7 @@ public class WebScraperService {
 
                 databaseService.saveProductPrice(productPrice);
             }
-            System.out.println("Link fully scraped: " + link);
+            LOG.info("Link fully scraped: {}", link);
         }
     }
 

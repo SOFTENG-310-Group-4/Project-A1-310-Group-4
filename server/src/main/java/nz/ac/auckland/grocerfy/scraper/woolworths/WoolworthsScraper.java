@@ -11,6 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.jsoup.nodes.Document;
 import org.springframework.data.util.Pair;
 
@@ -42,6 +45,8 @@ import nz.ac.auckland.grocerfy.scraper.SupermarketScraper;
  * Stores: the "region_cookie" of a branch is its pickup location id (e.g. Three Kings 9529).
  */
 public final class WoolworthsScraper extends SupermarketScraper {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WoolworthsScraper.class);
 
     private final HttpTransport transport;
     final WoolworthsSession session;
@@ -102,7 +107,8 @@ public final class WoolworthsScraper extends SupermarketScraper {
     @Override
     public List<ProductInfo> fetchProducts(String categoryKey) {
         List<ProductInfo> products = new ArrayList<>();
-        for (int page = 0; page < maxPages; page++) {
+        boolean lastPage = false;
+        for (int page = 0; page < maxPages && !lastPage; page++) {
             if (page > 0) {
                 randomRequestDelay();
             }
@@ -111,9 +117,7 @@ public final class WoolworthsScraper extends SupermarketScraper {
                 break; // error already reported
             }
             products.addAll(WoolworthsProductParser.parseProducts(productsNode));
-            if (WoolworthsProductParser.isLastPage(productsNode, page)) {
-                break;
-            }
+            lastPage = WoolworthsProductParser.isLastPage(productsNode, page);
         }
         dietaryTags.findFor(categoryKey, products);
         return products;
@@ -131,12 +135,12 @@ public final class WoolworthsScraper extends SupermarketScraper {
             return productsNode;
         }
 
-        System.err.println("Woolworths returned another store's products (session lost?), refreshing and retrying...");
+        LOG.warn("Woolworths returned another store's products (session lost?), refreshing and retrying...");
         session.refresh();
         productsNode = requestSearchPage(categoryKey, pageIndex, facetKey);
         if (productsNode != null && !session.matchesPinnedStore(WoolworthsProductParser.storeKeys(productsNode))) {
-            System.err.println("Woolworths still returns the wrong store for category " + categoryKey
-                + " page " + pageIndex + ", skipping page.");
+            LOG.warn("Woolworths still returns the wrong store for category {} page {}, skipping page.",
+                categoryKey, pageIndex);
             return null;
         }
         return productsNode;
@@ -189,7 +193,7 @@ public final class WoolworthsScraper extends SupermarketScraper {
         Optional<HttpResponse<String>> responseOptional = transport.send(
             WoolworthsRequests.productDetails(productId), HttpResponse.BodyHandlers.ofString());
         if (responseOptional.isEmpty() || responseOptional.get().statusCode() >= 400) {
-            System.err.println("Product details for Woolworths product " + productId + " unavailable, allergens unknown.");
+            LOG.warn("Product details for Woolworths product {} unavailable, allergens unknown.", productId);
             return Pair.of(EnumSet.noneOf(Allergen.class), productDietary);
         }
 
