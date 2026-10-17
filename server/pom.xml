@@ -32,6 +32,8 @@
 		<java.version>17</java.version>
 		<!-- Snyk: Tomcat 11.0.24 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 11.0.27 -->
 		<tomcat.version>11.0.27</tomcat.version>
+		<!-- Snyk: Jackson 3.1.5 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 3.1.7 -->
+		<jackson-bom.version>3.1.7</jackson-bom.version>
 		<sonar.organization>softeng-310-group-4</sonar.organization>
 	</properties>
 
@@ -40,7 +42,7 @@
 			<dependency>
 				<groupId>tools.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>3.1.5</version>
+				<version>${jackson-bom.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
