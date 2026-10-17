@@ -9,7 +9,12 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HttpUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     private static final String[] GENERIC_HEADERS = {
         "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
         "Accept-Language", "en-US",
@@ -50,14 +55,14 @@ public class HttpUtils {
         try {
             HttpResponse<T> response = client.send(request, bodyHandler);
             if (response.statusCode() >= 400) {
-                System.err.println("This link has returned an error code " + response.statusCode() + ": " + request.uri());
+                LOG.warn("This link has returned an error code {}: {}", response.statusCode(), request.uri());
             }
             return Optional.of(response);
         } catch (InterruptedException exc) {
-            System.err.println("Caught interrupt from GET " + request.uri().toString() + ", no data returned.");
+            LOG.warn("Caught interrupt from GET {}, no data returned.", request.uri());
             Thread.currentThread().interrupt();
         } catch (IOException exc) {
-            System.err.println("Caught IO error from GET " + request.uri().toString() + ", no data returned.");
+            LOG.warn("Caught IO error from GET {}, no data returned.", request.uri());
         }
         return Optional.empty();
     }

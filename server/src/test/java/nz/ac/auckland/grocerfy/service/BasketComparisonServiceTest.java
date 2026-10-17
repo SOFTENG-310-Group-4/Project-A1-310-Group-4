@@ -57,16 +57,16 @@ class BasketComparisonServiceTest {
 	// @Test
 	void compareBasketMergesDuplicateItemsAndChoosesCheapestAvailableStore() {
 		Product apple = new Product("Ambrosia Apple", "1kg", new HashSet<>(), Set.of(Dietary.VEGETARIAN, Dietary.VEGAN));
-		Product bread = new Product("White Bread", "200g", Set.of(Allergen.WHEAT, Allergen.GLUTEN, Allergen.EGG, Allergen.DAIRY), new HashSet<>());
+		Product whiteBread = new Product("White Bread", "200g", Set.of(Allergen.WHEAT, Allergen.GLUTEN, Allergen.EGG, Allergen.DAIRY), new HashSet<>());
 		Store storeA = new Store("Pak'nSave testStore", "Auckland", "1 Main St", "hypothetical uuid");
 		Store storeB = new Store("New World testStore", "Auckland", "2 Main St", "potential uuid");
 
-		when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(apple, bread));
+		when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(apple, whiteBread));
 		when(storePriceRepository.findAllWithRelations()).thenReturn(List.of(
 				new StorePrice(apple, storeA, new BigDecimal("1.50")),
-				new StorePrice(bread, storeA, new BigDecimal("4.00")),
+				new StorePrice(whiteBread, storeA, new BigDecimal("4.00")),
 				new StorePrice(apple, storeB, new BigDecimal("1.80")),
-				new StorePrice(bread, storeB, new BigDecimal("3.50"))));
+				new StorePrice(whiteBread, storeB, new BigDecimal("3.50"))));
 		when(storeRepository.findAll()).thenReturn(List.of(storeA, storeB));
 
 		BasketComparisonRequest request = new BasketComparisonRequest(List.of(
@@ -231,17 +231,17 @@ class BasketComparisonServiceTest {
 	@Test
 	void itemsWithoutEnoughStockAreTreatedAsMissing() {
 		Product apple = withId(new Product("Apple", "1kg", new HashSet<>(), new HashSet<>()), 1L);
-		Product bread = withId(new Product("White Bread", "600g", new HashSet<>(), new HashSet<>()), 2L);
+		Product whiteBread = withId(new Product("White Bread", "600g", new HashSet<>(), new HashSet<>()), 2L);
 		Store outOfStock = withId(new Store("Pak'nSave Albany", "Albany", "1 Main St", "uuid-a"), 10L);
 		Store lowStock = withId(new Store("Woolworths Albany", "Albany", "2 Main St", "9001"), 11L);
 		Store notStocked = withId(new Store("New World Albany", "Albany", "3 Main St", "uuid-b"), 12L);
 
-		when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(apple, bread));
+		when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(apple, whiteBread));
 		when(storePriceRepository.findAllWithRelations()).thenReturn(List.of(
 				stockedPrice(apple, outOfStock, "1.50", 20),
-				stockedPrice(bread, outOfStock, "3.00", 0),
+				stockedPrice(whiteBread, outOfStock, "3.00", 0),
 				stockedPrice(apple, lowStock, "1.80", 20),
-				stockedPrice(bread, lowStock, "3.50", 1),
+				stockedPrice(whiteBread, lowStock, "3.50", 1),
 				stockedPrice(apple, notStocked, "2.00", 20)));
 		when(storeRepository.findAll()).thenReturn(List.of(outOfStock, lowStock, notStocked));
 

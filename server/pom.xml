@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>nz.ac.auckland</groupId>
@@ -32,6 +32,10 @@
 		<java.version>17</java.version>
 		<!-- Snyk: jackson-databind 2.21.5 (managed by Spring Boot) has known vulnerabilities, fixed in 2.21.7 -->
 		<jackson-2-bom.version>2.21.7</jackson-2-bom.version>
+		<!-- Snyk: Tomcat 11.0.24 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 11.0.27 -->
+		<tomcat.version>11.0.27</tomcat.version>
+		<!-- Snyk: Jackson 3.1.5 (managed by Spring Boot 4.1.1) has known vulnerabilities, fixed in 3.1.7 -->
+		<jackson-bom.version>3.1.7</jackson-bom.version>
 		<sonar.organization>softeng-310-group-4</sonar.organization>
 	</properties>
 
@@ -40,7 +44,7 @@
 			<dependency>
 				<groupId>tools.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>3.1.5</version>
+				<version>${jackson-bom.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
