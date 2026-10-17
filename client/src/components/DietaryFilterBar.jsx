@@ -1,4 +1,6 @@
 import { ALLERGEN_TAGS, DIETARY_TAGS } from '../constants/dietaryTags'
+import { MAX_STORE_DISTANCE_KM } from '../utils/distance'
+import LocationButton from './LocationButton'
 
 /**
  * Dietary tag filter (issue #32).
@@ -32,10 +34,17 @@ function DietaryFilterBar({
       selectedAllergens=[],
       onToggleAllergen,
       onClear,
-      matchCount }) {
+        matchCount,
+        maxDistanceKm = MAX_STORE_DISTANCE_KM,
+        onChangeMaxDistance,
+        userLocation = null,
+        locationLoading = false,
+        locationError = '',
+        onUseLocation }) {
   const hasDietary = selectedDietary.length > 0
   const hasAllergens = selectedAllergens.length > 0
-  const hasSelection = hasDietary || hasAllergens
+      const hasDistanceLimit = maxDistanceKm < MAX_STORE_DISTANCE_KM
+      const hasSelection = hasDietary || hasAllergens || hasDistanceLimit
   const matchText = `${matchCount} ${matchCount === 1 ? 'product matches' : 'products match'}`
  
   const criteria = []
@@ -71,6 +80,27 @@ function DietaryFilterBar({
         options={ALLERGEN_TAGS}
         selected={selectedAllergens}
         onToggle={onToggleAllergen}
+      />
+
+      <h3>Store distance</h3>
+      <label className="distance-filter">
+        <span>Within {maxDistanceKm} km</span>
+        <input
+          type="range"
+          min="1"
+          max={MAX_STORE_DISTANCE_KM}
+          step="1"
+          value={maxDistanceKm}
+          disabled={!userLocation}
+          aria-label="Maximum store distance"
+          onChange={(event) => onChangeMaxDistance(Number(event.target.value))}
+        />
+      </label>
+      <LocationButton
+        userLocation={userLocation}
+        loading={locationLoading}
+        error={locationError}
+        onUseLocation={onUseLocation}
       />
  
       <p className="filter-summary">

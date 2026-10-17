@@ -2,6 +2,9 @@ package nz.ac.auckland.grocerfy.scraper.woolworths;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -11,6 +14,8 @@ import com.fasterxml.jackson.core.JsonToken;
  * The payload is not one JSON document, but the product's fields are plain JSON inside it.
  */
 final class WoolworthsProductDetailParser {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WoolworthsProductDetailParser.class);
 
     private static final JsonFactory JSON = new JsonFactory();
 
@@ -27,7 +32,7 @@ final class WoolworthsProductDetailParser {
         String ingredients = readStringAfterKey(body, "ingredients");
         String allergenStatement = readStringAfterKey(body, "allergenContained");
         if (ingredients == null && allergenStatement == null && !body.contains("\"ingredients\"")) {
-            System.err.println("No ingredient data found for Woolworths product " + productId + ". Page format change?");
+            LOG.warn("No ingredient data found for Woolworths product {}. Page format change?", productId);
         }
         return (ingredients == null ? "" : ingredients) + " "
             + (allergenStatement == null ? "" : allergenStatement);

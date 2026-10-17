@@ -399,8 +399,9 @@ button {
 .location-control {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 0;
 }
 
 .location-control span {
@@ -420,13 +421,14 @@ button {
     white-space: nowrap;
 }
 
+/* Solid backgrounds (amber/red tints over white) so text contrast can be checked */
 .stock-low {
-    background: rgba(245, 158, 11, 0.16);
+    background: #fdefd8;
     color: #92400e;
 }
 
 .stock-out {
-    background: rgba(220, 38, 38, 0.12);
+    background: #fbe5e5;
     color: #991b1b;
 }
 
@@ -511,6 +513,23 @@ button {
     margin: 0;
     color: var(--muted);
     font-size: 0.86rem;
+}
+
+.distance-filter {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.distance-filter input {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+.distance-filter input:disabled {
+    cursor: not-allowed;
 }
 
 /* =======================================

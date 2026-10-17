@@ -105,4 +105,44 @@ describe('ResultsPanel', () => {
 
   expect(screen.getByText(/km away/)).toBeInTheDocument()
 })
+
+  it('filters stores outside the selected distance and recalculates the cheapest option', () => {
+    const nearbyStore = makeStore({
+      storeId: 3,
+      storeName: 'Nearby Market',
+      availableSubtotal: 12.5,
+      latitude: -36.85,
+      longitude: 174.76,
+    })
+    const distantStore = makeStore({
+      ...CHEAPEST,
+      latitude: -36.73,
+      longitude: 174.71,
+    })
+
+    render(
+      <ResultsPanel
+        comparison={{ stores: [nearbyStore, distantStore], cheapestAvailableStore: distantStore }}
+        userLocation={{ latitude: -36.85, longitude: 174.76 }}
+        maxDistanceKm={5}
+      />,
+    )
+
+    expect(screen.getByText('1 store within 5 km')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Nearby Market' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: distantStore.storeName })).not.toBeInTheDocument()
+    expect(screen.getByText('$12.50', { selector: '.price' })).toBeInTheDocument()
+  })
+
+  it('reports when no store is within the selected distance', () => {
+    render(
+      <ResultsPanel
+        comparison={{ stores: [makeStore()], cheapestAvailableStore: null }}
+        userLocation={{ latitude: -36.85, longitude: 174.76 }}
+        maxDistanceKm={1}
+      />,
+    )
+
+    expect(screen.getByText('No stores within 1 km')).toBeInTheDocument()
+  })
 })

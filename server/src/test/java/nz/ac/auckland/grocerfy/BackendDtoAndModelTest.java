@@ -1,49 +1,71 @@
 package nz.ac.auckland.grocerfy;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
-import nz.ac.auckland.grocerfy.dto.BasketComparisonRequest;
-import nz.ac.auckland.grocerfy.dto.BasketComparisonResponse;
-import nz.ac.auckland.grocerfy.dto.BasketItemRequest;
-import nz.ac.auckland.grocerfy.dto.MissingItemResponse;
-import nz.ac.auckland.grocerfy.dto.ProductSearchResponse;
-import nz.ac.auckland.grocerfy.dto.ProductSummaryResponse;
-import nz.ac.auckland.grocerfy.dto.StoreComparisonResponse;
-import nz.ac.auckland.grocerfy.dto.StoreLineItemResponse;
+import nz.ac.auckland.grocerfy.model.Allergen;
+import nz.ac.auckland.grocerfy.model.Dietary;
+import nz.ac.auckland.grocerfy.model.LoyaltyProgram;
 import nz.ac.auckland.grocerfy.model.Product;
 import nz.ac.auckland.grocerfy.model.Store;
 import nz.ac.auckland.grocerfy.model.StorePrice;
 
+/**
+ * Unit tests for the model classes' constructors and the rules they enforce.
+ */
 class BackendDtoAndModelTest {
 
-	// @Test
-	// void recordsExposeTheirFieldsAndModelDisplayHelpersFormatValues() {
-	// 	BasketComparisonRequest request = new BasketComparisonRequest(List.of(new BasketItemRequest(1L, 2)));
-	// 	BasketComparisonResponse response = new BasketComparisonResponse(
-	// 			List.of(new ProductSummaryResponse(1L, "Apple")),
-	// 			List.of(new StoreComparisonResponse(3L, "Pak n Save", "Auckland", "1 Main St", true,
-	// 					new BigDecimal("3.50"),
-	// 					List.of(new StoreLineItemResponse(1L, "Apple", 2, new BigDecimal("1.50"), new BigDecimal("3.00"))),
-	// 					List.of())),
-	// 			null,
-	// 			null);
-	// 	MissingItemResponse missing = new MissingItemResponse(2L, "Bread", 1);
-	// 	ProductSearchResponse search = new ProductSearchResponse(4L, "Apple", "Fresh Apple", "Fresh", "Fruit", "1kg", true, false, true, true);
-	// 	Product product = new Product(4L, "Apple", "Fresh", "Fruit", "1kg", true, false, true, true);
-	// 	Store store = new Store("Local Market", "Auckland", "2 High St");
-	// 	store.setStoreId(5L);
-	// 	StorePrice price = new StorePrice(product, store, new BigDecimal("2.10"));
+	private final Product butter = new Product("Anchor Butter", "500g", Set.of(Allergen.DAIRY), Set.of(Dietary.VEGETARIAN));
+	private final Store store = new Store("Woolworths Three Kings", "Three Kings", "532 Mt Albert Road", "9529");
 
-	// 	assertThat(request.items()).hasSize(1);
-	// 	assertThat(response.requestedItems()).hasSize(1);
-	// 	assertThat(missing.productName()).isEqualTo("Bread");
-	// 	assertThat(search.displayName()).isEqualTo("Fresh Apple");
-	// 	assertThat(product.getDisplayName()).isEqualTo("Fresh Apple");
-	// 	assertThat(store.getDisplayName()).isEqualTo("Local Market - Auckland");
-	// 	assertThat(price.getPriceLabel()).isEqualTo("$2.10");
-	// }
+	@Test
+	void productAndStoreExposeTheirFields() {
+		assertThat(butter.getProductName()).isEqualTo("Anchor Butter");
+		assertThat(butter.getSize()).isEqualTo("500g");
+		assertThat(butter.getAllergens()).containsExactly(Allergen.DAIRY);
+		assertThat(butter.getDietInfo()).containsExactly(Dietary.VEGETARIAN);
+
+		assertThat(store.getName()).isEqualTo("Woolworths Three Kings");
+		assertThat(store.getRegion()).isEqualTo("Three Kings");
+		assertThat(store.getAddress()).isEqualTo("532 Mt Albert Road");
+		assertThat(store.getCode()).isEqualTo("9529");
+	}
+
+	@Test
+	void shelfPriceOnlyHasNoMemberPrice() {
+		StorePrice price = new StorePrice(butter, store, new BigDecimal("9.29"));
+
+		assertThat(price.getPrice()).isEqualByComparingTo("9.29");
+		assertThat(price.getMemberPrice()).isNull();
+		assertThat(price.getLoyaltyProgram()).isNull();
+	}
+
+	@Test
+	void memberPriceIsKeptTogetherWithItsLoyaltyProgram() {
+		StorePrice price = new StorePrice(butter, store, new BigDecimal("9.29"), new BigDecimal("8.50"),
+				LoyaltyProgram.EVERYDAY_REWARDS);
+
+		assertThat(price.getMemberPrice()).isEqualByComparingTo("8.50");
+		assertThat(price.getLoyaltyProgram()).isEqualTo(LoyaltyProgram.EVERYDAY_REWARDS);
+	}
+
+	@Test
+	void memberPriceWithoutALoyaltyProgramIsDropped() {
+		StorePrice price = new StorePrice(butter, store, new BigDecimal("9.29"), new BigDecimal("8.50"), null);
+
+		assertThat(price.getMemberPrice()).isNull();
+		assertThat(price.getLoyaltyProgram()).isNull();
+	}
+
+	@Test
+	void loyaltyProgramWithoutAMemberPriceIsDropped() {
+		StorePrice price = new StorePrice(butter, store, new BigDecimal("9.29"), null, LoyaltyProgram.EVERYDAY_REWARDS);
+
+		assertThat(price.getMemberPrice()).isNull();
+		assertThat(price.getLoyaltyProgram()).isNull();
+	}
 }
